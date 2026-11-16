@@ -2,9 +2,9 @@
 
 ## M2 — Real providers
 
-**State:** implementation complete; local gate and PR CI green; awaiting merge.
+**State:** complete — merged to `main` via PR [#5](https://github.com/yoAlves/yo-champs/pull/5) (merge commit `1dc305c`).
 **Date:** 2026-11-16.
-**Branch:** `feature/m2-providers` → `main` via PR [#5](https://github.com/yoAlves/yo-champs/pull/5); gate evidence below.
+**Gate evidence:** final green CI run 43947073489 on the merged branch head.
 
 ### Gate
 
@@ -15,8 +15,8 @@
 | Core vendor-free | pass | case-insensitive grep for vendor names over `Sources/YoChampsCore`: zero matches |
 | Typed errors | pass | `LLMError` cases for key/model/timeout/rate/server + Settings display + cancellation |
 | Persistence | pass | `FileConversationStore` restart/clear/schema tests (JSON `history.json`, schemaVersion 1) |
-| `core (linux)` (CI) | pass | [run 43946128386](https://github.com/yoAlves/yo-champs/actions/runs/43946128386), 1m3s |
-| `app + gates (macos)` (CI) | pass | same run, 4m12s on `macos-15-intel` |
+| `core (linux)` (CI) | pass | [run 43947073489](https://github.com/yoAlves/yo-champs/actions/runs/43947073489), 1m5s |
+| `app + gates (macos)` (CI) | pass | same run, 8m29s on `macos-15-intel` |
 
 ### Evidence
 
@@ -29,8 +29,8 @@
   - `no leaks found` (~311 KB scanned)
 - `make provider-check` (exit 0): stub on 127.0.0.1, ephemeral `URLSession` transport,
   real SSE parse → `provider-check: OK`.
-- PR CI green run 43946128386 on code head `a6907cd`: `core (linux)` pass 1m3s,
-  `app + gates (macos)` pass 4m12s. Earlier attempts exposed arm64 runner labels
+- PR CI final green run 43947073489 on merged branch head `aad9d07`:
+  `core (linux)` pass 1m5s, `app + gates (macos)` pass 8m29s. Earlier attempts exposed arm64 runner labels
   (`macos-15` never acquired, `macos-14-arm64` unsupported) and a 5s stub-start
   timeout; fixed by `macos-15-intel` and a 30s readiness check in
   `scripts/provider-check.sh`. No gate or rule was weakened.
@@ -38,7 +38,7 @@
   `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings),
   `7ae3497` (app wiring + provider-check), `1605e4b` (integration fixes),
   `86a1cbb`/`9187bb0` (runner), `64ac372` (stub readiness),
-  `df98e29`/`a6907cd` (CI evidence) and later docs-only commits.
+  `df98e29`/`a6907cd`/`aad9d07` (CI evidence).
 
 ### Gaps and risks
 

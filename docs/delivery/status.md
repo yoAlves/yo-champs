@@ -16,7 +16,7 @@
 | `make demo` | pass | exit 0; debug bundle launched with `--demo`; PID observed; fixture question auto-asked |
 | URL scheme + lifecycle | pass | `yochamps://open` registered in Info.plist; log `url open schemes=yochamps`; log `launch demo=true` |
 | Core vendor-free | pass | case-insensitive grep for mock/vendor names in `Sources/YoChampsCore`: no matches |
-| PR + CI + review | pending | push/PR require owner approval; never push to main |
+| PR + CI + review | pass | [PR #4](https://github.com/yoAlves/yo-champs/pull/4) with `--assignee @me`; `core (linux)` and `app + gates (macos)` green ([run 43884012520](https://github.com/yoAlves/yo-champs/actions/runs/43884012520)); review 0 critical / 0 important after fix; merge commit via PR |
 
 ### Evidence
 

@@ -32,6 +32,17 @@ V0: JSON files with `Codable` under
 `~/Library/Application Support/YoChamps/`. SQLite/GRDB arrives with history
 search/RAG (post-V0); the `ConversationStore` protocol isolates the swap.
 
+Conversation history is `history.json` encoded as `{schemaVersion: 1,
+messages: [...]}` and written atomically. `FileConversationStore` takes its
+directory by injection (tests use a temporary path, the shell passes Application
+Support), and `ConversationFileMigrator` reads `schemaVersion` before decoding:
+an unknown version is refused with a typed error, never guessed. A missing
+`history.json` loads as an empty `Conversation()`; a malformed or unknown-version
+file throws `ConversationFileError` and is left untouched for the shell to reset.
+Adding a version means backing up the file first, adding a migration case here
+and writing back the current version; a failed migration leaves the old file
+intact.
+
 ## Multi-OS
 
 Post-V1. The Core can ship as a library or behind a JSON-RPC daemon; the shell

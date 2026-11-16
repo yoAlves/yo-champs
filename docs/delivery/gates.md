@@ -20,8 +20,10 @@ The single automated gate. It runs, in order:
 4. `make mascot-validate` — default and local packs.
 5. `make secrets` — gitleaks over the working tree.
 
-Contract tests, integration tests and XCUITest join the gate when their
-milestone lands. UI validation never uses MCP.
+`make provider-check` is the M2 integration check: it runs the real streaming
+client against a local SSE stub. `make ci` (macOS) runs `verify` followed by
+`provider-check`; `make verify` alone does not start the stub. XCUITest still
+waits for full Xcode. UI validation never uses MCP.
 
 ## CI
 
@@ -30,7 +32,7 @@ milestone lands. UI validation never uses MCP.
 - **core (linux):** `swift test` on a Swift 6.2 container. The macOS targets are
   excluded in `Package.swift` on non-Apple platforms.
 - **app + gates (macos):** installs SwiftLint/SwiftFormat/gitleaks and runs
-  `make ci`. `make ci` is exactly `make verify`.
+  `make ci`, i.e. `make verify` + `make provider-check`.
 
 CI green means the workflow passed on the remote. A local `make ci` run is
 evidence of the same commands, but not of the remote result; record which one

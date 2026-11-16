@@ -59,6 +59,11 @@ public enum LLMError: Error, Sendable, Equatable, CustomStringConvertible {
     case provider(String)
     case emptyResponse
     case invalidRequest(String)
+    case unauthorized
+    case invalidModel(String)
+    case rateLimited
+    case timedOut
+    case server(status: Int)
 
     public var description: String {
         switch self {
@@ -68,6 +73,16 @@ public enum LLMError: Error, Sendable, Equatable, CustomStringConvertible {
             "provider returned an empty response"
         case let .invalidRequest(message):
             "invalid request: \(message)"
+        case .unauthorized:
+            "the API key is missing or rejected; check the provider key"
+        case let .invalidModel(model):
+            "the model \"\(model)\" is unavailable; check the profile model"
+        case .rateLimited:
+            "rate limited by the provider; try again shortly"
+        case .timedOut:
+            "the provider timed out; try again"
+        case let .server(status):
+            "the provider returned server error \(status); try again"
         }
     }
 }

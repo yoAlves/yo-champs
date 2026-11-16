@@ -57,7 +57,7 @@ mascot-validate: ## Validate the default pack and local packs
 
 verify: lint test build mascot-validate secrets ## Full gate: lint, test, build, pack, secrets
 
-ci: verify ## Exactly what GitHub Actions runs
+ci: verify provider-check ## Exactly what GitHub Actions runs
 
 deploy: ## Release build + install to ~/Applications/YoChamps.app + open (local only)
 	@./scripts/deploy.sh
@@ -88,8 +88,8 @@ clean: ## Remove build artifacts
 	@rm -rf "$(ROOT)/.build"
 	@echo "cleaned .build"
 
-provider-check: ## Test the configured provider (M2+)
-	@echo "provider-check: arrives in M2" >&2; exit 2
+provider-check: ## Run the real streaming client against a local SSE stub
+	@./scripts/provider-check.sh
 
 eval: ## Run the eval suite (M4+)
 	@echo "eval: arrives in M4" >&2; exit 2

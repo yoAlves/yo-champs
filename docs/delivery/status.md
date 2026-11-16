@@ -1,5 +1,53 @@
 # Status
 
+## M2 — Real providers
+
+**State:** implementation complete; local gate and PR CI green; awaiting merge.
+**Date:** 2026-11-16.
+**Branch:** `feature/m2-providers` → `main` via PR [#5](https://github.com/yoAlves/yo-champs/pull/5); gate evidence below.
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0: format 0/54, SwiftLint 0 violations in 52 files, 105 tests / 16 suites, app + validator builds, 1 pack, gitleaks no leaks |
+| `make provider-check` | pass | exit 0; real `OpenAICompatibleProvider` against local Python SSE stub → `provider-check: OK` |
+| Core vendor-free | pass | case-insensitive grep for vendor names over `Sources/YoChampsCore`: zero matches |
+| Typed errors | pass | `LLMError` cases for key/model/timeout/rate/server + Settings display + cancellation |
+| Persistence | pass | `FileConversationStore` restart/clear/schema tests (JSON `history.json`, schemaVersion 1) |
+| `core (linux)` (CI) | pass | [run 43946128386](https://github.com/yoAlves/yo-champs/actions/runs/43946128386), 1m3s |
+| `app + gates (macos)` (CI) | pass | same run, 4m12s on `macos-15-intel` |
+
+### Evidence
+
+- `make verify` (exit 0):
+  - `0/54 files require formatting, 34 files skipped.`
+  - `Done linting! Found 0 violations, 0 serious in 52 files.`
+  - `✔ Test run with 105 tests in 16 suites passed after 0.111 seconds.`
+  - `Build of product 'YoChampsMac' complete!`, `Build of product 'YoChampsMascotValidator' complete!`
+  - `ok  .../Resources/Mascots/Default`, `validated 1 pack(s)`
+  - `no leaks found` (~311 KB scanned)
+- `make provider-check` (exit 0): stub on 127.0.0.1, ephemeral `URLSession` transport,
+  real SSE parse → `provider-check: OK`.
+- PR CI green run 43946128386 on code head `a6907cd`: `core (linux)` pass 1m3s,
+  `app + gates (macos)` pass 4m12s. Earlier attempts exposed arm64 runner labels
+  (`macos-15` never acquired, `macos-14-arm64` unsupported) and a 5s stub-start
+  timeout; fixed by `macos-15-intel` and a 30s readiness check in
+  `scripts/provider-check.sh`. No gate or rule was weakened.
+- Commits on the branch: `e84c13f` (Core contracts), `7dc17fa` (SSE client),
+  `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings),
+  `7ae3497` (app wiring + provider-check), `1605e4b` (integration fixes),
+  `86a1cbb`/`9187bb0` (runner), `64ac372` (stub readiness),
+  `df98e29`/`a6907cd` (CI evidence) and later docs-only commits.
+
+### Gaps and risks
+
+- No full Xcode → Settings UI and streaming visuals have no automated UI test;
+  engine/contract tests and `make demo` cover behavior.
+- ADR 0003 wording and cross-host redirect blocking remain deferred; header
+  placeholders are expanded at request time (no literal `{{…}}` is sent).
+- Real endpoint Q&A still requires a personal Keychain key; the gate uses a stub.
+
 ## M1 — Conversation loop
 
 **State:** implementation complete; local gate green; awaiting review and PR.

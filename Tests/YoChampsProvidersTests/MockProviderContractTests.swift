@@ -18,19 +18,11 @@ struct MockProviderContractTests {
             clock: RecordingClock()
         )
 
-        var events: [LLMEvent] = []
-        for try await event in provider.stream(request) {
-            events.append(event)
-        }
-
-        let deltas = events.compactMap { event -> String? in
-            guard case let .textDelta(delta) = event else { return nil }
-            return delta
-        }
-        #expect(deltas == ["one ", "two ", "three"])
-        #expect(deltas.joined() == "one two three")
-        #expect(events.last == .done)
-        #expect(events.filter { $0 == .done }.count == 1)
+        try await ProviderContract.streamsAnswer(
+            provider,
+            request: request,
+            expectedDeltas: ["one ", "two ", "three"]
+        )
     }
 
     @Test("paces chunks through the injected clock")
@@ -61,36 +53,19 @@ struct MockProviderContractTests {
 
     @Test("provider failures surface without emitting text")
     func failurePropagates() async {
-        let provider = MockProvider(behavior: .failure(.provider("boom")))
-
-        var deltas: [String] = []
-        var caught: LLMError?
-        do {
-            for try await event in provider.stream(request) {
-                if case let .textDelta(delta) = event {
-                    deltas.append(delta)
-                }
-            }
-        } catch {
-            caught = error as? LLMError
-        }
-
-        #expect(caught == LLMError.provider("boom"))
-        #expect(deltas.isEmpty)
+        await ProviderContract.failure(
+            MockProvider(behavior: .failure(.provider("boom"))),
+            request: request,
+            expected: .provider("boom")
+        )
     }
 
     @Test("an empty reply surfaces emptyResponse")
     func emptyReply() async {
-        let provider = MockProvider(behavior: .reply(""))
-
-        var caught: LLMError?
-        do {
-            for try await _ in provider.stream(request) {}
-        } catch {
-            caught = error as? LLMError
-        }
-
-        #expect(caught == LLMError.emptyResponse)
+        await ProviderContract.emptyResponse(
+            MockProvider(behavior: .reply("")),
+            request: request
+        )
     }
 
     @Test("cancelling the consumer stops the stream", .timeLimit(.minutes(1)))

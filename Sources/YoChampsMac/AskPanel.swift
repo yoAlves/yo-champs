@@ -57,14 +57,14 @@ final class AskPanelController {
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let hidePanel = {
-            model.stop()
-            self.panel.orderOut(nil)
+        // Kept alive by the controller: NSWindow.delegate is weak.
+        panel.delegate = closeHandler
+
+        let hidePanel: () -> Void = { [weak self] in
+            self?.hide()
         }
         panel.contentView = NSHostingView(rootView: AskView(model: model, onClose: hidePanel))
         panel.onEscape = hidePanel
-        // Kept alive by the controller: NSWindow.delegate is weak.
-        panel.delegate = closeHandler
         panel.center()
     }
 
@@ -78,5 +78,10 @@ final class AskPanelController {
     func showDemo() {
         show()
         model.ask("What can you do?")
+    }
+
+    private func hide() {
+        model.stop()
+        panel.orderOut(nil)
     }
 }

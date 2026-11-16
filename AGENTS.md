@@ -70,6 +70,28 @@ M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
 - Contract tests for the provider live in `YoChampsProviders` from M2.
 - Do not weaken tests or gates to make a milestone look green.
 
+## Branching and releases (GitFlow)
+
+`main` is production/release-only; `develop` is the integration branch. Both are
+protected on GitHub: **no direct pushes**, pull request required (0 approvals,
+solo owner), required checks `core (linux)` and `app + gates (macos)`; admins
+are enforced, force pushes and deletions are blocked. `main` additionally
+requires the branch to be up to date (`strict`); `develop` does not.
+
+- Bootstrap: `develop` was created from `main` when this policy landed; the
+  adoption change is PR #1.
+- `feature/<slug>` branches from `develop` and merges back via PR into `develop`.
+- `release/vX.Y.Z` branches from `develop` and merges via PR into `main`; tag
+  `vX.Y.Z` on `main`; then back-merge `main` into `develop` via a PR.
+- `hotfix/<slug>` branches from `main`, merges via PR into `main`, is tagged
+  `vX.Y.Z` on `main`, and is back-merged into `develop` via a PR.
+- Never commit, push, merge or rebase directly on `main`/`develop`. A blocked
+  push is the protection working: move the work to a branch and open a PR.
+- Conventional Commits; merge commits preserve history; keep the PR branch up
+  to date with its base before merging.
+- M0 history predates this policy; it is kept as the baseline and is not
+  rewritten.
+
 ## Milestones and gates
 
 `docs/delivery/milestones/M0.md` … `M4.md` are binding contracts. A milestone
@@ -95,9 +117,11 @@ kept.
 - Cutting a release is the only rewrite: move entries to a new
   `## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
   `[Unreleased]` compare link to the new tag, and leave `## [Unreleased]` empty.
-  Do it on a branch rebased on `main`, with no open or in-flight changelog
-  branches; after merging, verify entries are in the right section (union can
-  glue adjacent bullets into the released section and drop blank lines).
+  Do it on the `release/vX.Y.Z` branch cut from `develop` (rebased on the current
+  `main` only if that branch already exists), with no open or in-flight
+  changelog branches; after merging, verify entries are in the right section
+  (union can glue adjacent bullets into the released section and drop blank
+  lines).
 - GitHub/GitLab web merges may ignore merge drivers; the append-only discipline
   is the real guarantee.
 

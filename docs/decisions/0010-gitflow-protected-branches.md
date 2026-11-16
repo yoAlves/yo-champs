@@ -14,16 +14,20 @@ milestone releases, agent-authored changes and required CI checks.
 
 - Use GitFlow:
   - `main`: production/release-only.
-  - `develop`: integration branch.
+  - `develop`: integration branch, created from `main` when this policy landed
+    (PR #1 is the adoption change).
   - `feature/<slug>` from `develop` → PR to `develop`.
   - `release/vX.Y.Z` from `develop` → PR to `main`; tag on `main`; back-merge
-    `main` into `develop`.
-  - `hotfix/<slug>` from `main` → PR to `main`; back-merge into `develop`.
+    `main` into `develop` via a PR.
+  - `hotfix/<slug>` from `main` → PR to `main`; tag on `main`; back-merge into
+    `develop` via a PR.
 - Protect `main` and `develop` on GitHub:
   - pull request required (0 approvals, since the owner is solo);
   - required checks `core (linux)` and `app + gates (macos)`;
-  - `main` requires branches up to date (`strict`), admins enforced;
-  - no force pushes, no deletions, conversation resolution required.
+  - admins enforced, no force pushes, no deletions;
+  - conversation resolution required;
+  - `main` additionally requires branches up to date (`strict`); `develop`
+    does not.
 - Never bypass protection (no admin override, no disabling the rule) to land a
   change. A rejected direct push is the expected, correct outcome.
 - Conventional Commits; merge commits preserve history.

@@ -22,8 +22,8 @@ an entry.
 - Cutting a release is the only rewrite: move entries into a new
   `## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
   `[Unreleased]` compare link to the new tag and leave `## [Unreleased]` empty.
-  Do the cut on a branch rebased on `main` (no open or in-flight changelog
-  branches) and verify the result after merging.
+  Do the cut on the `release/vX.Y.Z` branch cut from `develop`, with no open or
+  in-flight changelog branches, and verify the result after merging.
 - The driver is local/merge-time only; GitHub/GitLab web merges may ignore it,
   so the append-only convention is the real guarantee.
 

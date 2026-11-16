@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,18 +16,20 @@ concurrency:
 jobs:
   core:
     name: core (linux)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     container: swift:6.2
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: swift test
         run: swift test
 
   macos:
     name: app + gates (macos)
     runs-on: macos-15
+    timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: install tools
         run: brew install swiftlint swiftformat gitleaks
       - name: make ci

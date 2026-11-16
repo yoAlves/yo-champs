@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: core (linux)
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    steps:
+      - uses: actions/checkout@v4
+      - name: swift test
+        run: swift test
+
+  macos:
+    name: app + gates (macos)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: install tools
+        run: brew install swiftlint swiftformat gitleaks
+      - name: make ci
+        run: make ci

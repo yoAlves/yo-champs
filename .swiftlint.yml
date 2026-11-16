@@ -1,0 +1,31 @@
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - DerivedData
+  - .swiftpm
+
+disabled_rules:
+  # SwiftFormat owns comma style; avoid fighting it.
+  - trailing_comma
+
+line_length:
+  warning: 120
+  error: 160
+
+file_length:
+  warning: 400
+  error: 600
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - x
+    - y
+
+type_name:
+  min_length:
+    warning: 3

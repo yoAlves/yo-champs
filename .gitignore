@@ -1,0 +1,44 @@
+# macOS
+.DS_Store
+.LSOverride
+Icon?
+
+# Xcode / SwiftPM / build output
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+.build/
+*.app
+
+# Local notes and scratch (never committed)
+.specs/
+notes/
+scratch/
+*.scratch.md
+*.local.md
+*.session.md
+
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.mobileprovision
+*.key
+*.pem
+auth.json
+**/auth.json
+**/service.json
+
+# Models and large binaries
+*.gguf
+*.mlx
+
+# Coverage and reports
+coverage/
+*.profraw
+*.profdata
+eval-reports/

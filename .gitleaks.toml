@@ -1,0 +1,13 @@
+title = "Yo Champs"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Build output, third-party caches, and fake credentials in docs/tests"
+paths = [
+  '''\.build/''',
+  '''DerivedData/''',
+  '''node_modules/''',
+  '''\.git/''',
+]

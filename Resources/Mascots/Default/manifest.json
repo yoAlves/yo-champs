@@ -1,0 +1,49 @@
+{
+  "anchor" : {
+    "x" : 0.5,
+    "y" : 1
+  },
+  "animations" : {
+    "confused" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : false
+    },
+    "error" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : false
+    },
+    "happy" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : false
+    },
+    "idle" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : true
+    },
+    "talking" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : false
+    },
+    "thinking" : {
+      "fps" : 8,
+      "frames" : 1,
+      "loop" : true
+    }
+  },
+  "author" : "Yo Champs",
+  "frameSize" : {
+    "height" : 64,
+    "width" : 64
+  },
+  "id" : "champ",
+  "license" : "CC-BY-4.0",
+  "name" : "Champ",
+  "scale" : 2,
+  "schemaVersion" : 1,
+  "version" : "0.1.0"
+}

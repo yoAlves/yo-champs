@@ -1,0 +1,7 @@
+--indent 4
+--maxwidth 120
+--swiftversion 6.0
+--exclude .build,DerivedData,.swiftpm
+--stripunusedargs closure-only
+--wraparguments before-first
+--wrapparameters before-first

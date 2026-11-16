@@ -206,6 +206,20 @@ whole ref as the account. Config, logs and fixtures hold the reference only,
 never the key. The Mac shell implements `SecretStore` with the Keychain service
 `com.yurioliveira.yochamps`; tests must inject a fake, never the real Keychain.
 
+`ProviderConfigEncoder` is the write path: it validates ids/default, normalizes
+`isDefault`, sorts capabilities for stable bytes and writes only references.
+`ProviderRegistry(profiles:defaultProfileID:)` is the public validated
+constructor; the decoder and encoder both use the same invariants.
+
+The shell keeps `config.json` under Application Support via
+`ProviderConfigFileStore`: a missing file is onboarding, an unreadable or
+malformed one is a typed error. Settings edits the selected profile in place
+(preserving label, capabilities and the other profiles), writes the key only to
+Keychain, and adds the `Authorization` header at request time for “Test
+connection”. Distinct user-facing errors come from `LLMError`,
+`ProviderConfigError`, `SettingsError` and `KeychainError` descriptions;
+cancellation renders as “Cancelled”.
+
 Header placeholders: `{{conversationId}}`, `{{appVersion}}`, `{{userAgent}}`.
 No real provider ships as default.
 

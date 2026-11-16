@@ -42,6 +42,58 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
     }
 }
 
+/// One set of field-level invariants shared by the decoder, the registry
+/// constructor and the encoder, so no write path can persist a profile the
+/// loader would reject (or a secret hidden in a header).
+private enum ProviderProfileValidation {
+    static func validate(_ profile: ProviderProfile) throws {
+        for (field, value) in [
+            ("id", profile.id),
+            ("label", profile.label),
+            ("model", profile.model),
+            ("secretRef", profile.secretRef),
+        ] where value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            throw ProviderConfigError.emptyField(profileID: profile.id, field: field)
+        }
+        guard let scheme = profile.baseURL.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              let host = profile.baseURL.host, !host.isEmpty
+        else {
+            throw ProviderConfigError.invalidBaseURL(profileID: profile.id)
+        }
+        try validateSecretRef(profile.secretRef, profileID: profile.id)
+        for (name, value) in profile.headers {
+            let normalizedValue = value.trimmingCharacters(in: .whitespaces).lowercased()
+            guard !isCredentialHeader(name),
+                  !normalizedValue.contains("bearer "),
+                  !normalizedValue.contains("basic "),
+                  !normalizedValue.hasPrefix("sk-")
+            else {
+                throw ProviderConfigError.credentialHeader(name)
+            }
+        }
+    }
+
+    private static func validateSecretRef(_ ref: String, profileID: String) throws {
+        guard ref.hasPrefix("keychain:") else {
+            throw ProviderConfigError.invalidSecretRef(profileID)
+        }
+        let remainder = ref.dropFirst("keychain:".count)
+        guard let slash = remainder.firstIndex(of: "/"), slash > remainder.startIndex,
+              !remainder[remainder.index(after: slash)...].isEmpty
+        else {
+            throw ProviderConfigError.invalidSecretRef(profileID)
+        }
+    }
+
+    private static func isCredentialHeader(_ name: String) -> Bool {
+        let normalized = name.lowercased().filter(\.isLetter)
+        let words = ["authorization", "authentication", "apikey", "token",
+                     "secret", "cookie", "password", "credential"]
+        return words.contains { normalized.contains($0) }
+    }
+}
+
 private struct ProviderConfigFile: Decodable {
     let schemaVersion: Int
     let defaultProfileID: String?
@@ -60,11 +112,78 @@ private struct ProviderProfileWire: Decodable {
     let isDefault: Bool?
 }
 
+private struct ProviderConfigOutput: Encodable {
+    let schemaVersion: Int
+    let defaultProfileID: String
+    let profiles: [ProviderProfileOutput]
+}
+
+private struct ProviderProfileOutput: Encodable {
+    let id: String
+    let label: String
+    let kind: String
+    let baseURL: URL
+    let model: String
+    let headers: [String: String]
+    let secretRef: String
+    let capabilities: [Capability]
+    let isDefault: Bool
+
+    init(profile: ProviderProfile, defaultID: String) {
+        id = profile.id
+        label = profile.label
+        kind = ProviderConfigDecoder.wireKind
+        baseURL = profile.baseURL
+        model = profile.model
+        headers = profile.headers
+        secretRef = profile.secretRef
+        capabilities = profile.capabilities.sorted { $0.rawValue < $1.rawValue }
+        isDefault = profile.id == defaultID
+    }
+}
+
 /// The resolved, validated set of profiles. `defaultProfileID` in the config
 /// file is the single source of truth for the default.
 public struct ProviderRegistry: Sendable, Equatable {
     public let profiles: [ProviderProfile]
     public let defaultProfile: ProviderProfile
+
+    init(profiles: [ProviderProfile], defaultProfile: ProviderProfile) {
+        self.profiles = profiles
+        self.defaultProfile = defaultProfile
+    }
+
+    /// Validates ids and normalizes `isDefault` so lookups and the resolved
+    /// default can never disagree.
+    public init(profiles: [ProviderProfile], defaultProfileID: String) throws {
+        var seen = Set<String>()
+        for profile in profiles {
+            try ProviderProfileValidation.validate(profile)
+            guard seen.insert(profile.id).inserted else {
+                throw ProviderConfigError.duplicateProfileID(profile.id)
+            }
+        }
+        guard let storedDefault = profiles.first(where: { $0.id == defaultProfileID }) else {
+            throw ProviderConfigError.unknownDefaultProfile(defaultProfileID)
+        }
+        let normalized = profiles.map { profile in
+            ProviderProfile(
+                id: profile.id,
+                label: profile.label,
+                kind: profile.kind,
+                baseURL: profile.baseURL,
+                model: profile.model,
+                headers: profile.headers,
+                secretRef: profile.secretRef,
+                capabilities: profile.capabilities,
+                isDefault: profile.id == defaultProfileID
+            )
+        }
+        guard let defaultProfile = normalized.first(where: { $0.id == storedDefault.id }) else {
+            throw ProviderConfigError.unknownDefaultProfile(defaultProfileID)
+        }
+        self.init(profiles: normalized, defaultProfile: defaultProfile)
+    }
 
     public func profile(id: String) -> ProviderProfile? {
         profiles.first { $0.id == id }
@@ -73,12 +192,7 @@ public struct ProviderRegistry: Sendable, Equatable {
 
 public enum ProviderConfigDecoder {
     public static let schemaVersion = 1
-    private static let wireKind = "openai-compatible"
-    private static let referencePrefix = "keychain:"
-    private static let credentialWords = [
-        "authorization", "authentication", "apikey", "token",
-        "secret", "cookie", "password", "credential",
-    ]
+    fileprivate static let wireKind = "openai-compatible"
 
     public static func decode(_ data: Data) throws -> ProviderRegistry {
         let file: ProviderConfigFile
@@ -150,63 +264,39 @@ public enum ProviderConfigDecoder {
         guard wire.kind == wireKind else {
             throw ProviderConfigError.unsupportedKind(wire.kind)
         }
-        for (field, value) in [
-            ("id", wire.id),
-            ("label", wire.label),
-            ("model", wire.model),
-            ("secretRef", wire.secretRef),
-        ] where value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            throw ProviderConfigError.emptyField(profileID: wire.id, field: field)
-        }
-        guard let scheme = wire.baseURL.scheme?.lowercased(),
-              scheme == "http" || scheme == "https",
-              let host = wire.baseURL.host, !host.isEmpty
-        else {
-            throw ProviderConfigError.invalidBaseURL(profileID: wire.id)
-        }
-        try validateSecretRef(wire.secretRef, profileID: wire.id)
-
-        let headers = wire.headers ?? [:]
-        for (name, value) in headers {
-            let normalizedValue = value.trimmingCharacters(in: .whitespaces).lowercased()
-            guard !isCredentialHeader(name),
-                  !normalizedValue.contains("bearer "),
-                  !normalizedValue.contains("basic "),
-                  !normalizedValue.hasPrefix("sk-")
-            else {
-                throw ProviderConfigError.credentialHeader(name)
-            }
-        }
-        return ProviderProfile(
+        let profile = ProviderProfile(
             id: wire.id,
             label: wire.label,
             kind: .compatible,
             baseURL: wire.baseURL,
             model: wire.model,
-            headers: headers,
+            headers: wire.headers ?? [:],
             secretRef: wire.secretRef,
             capabilities: Set(wire.capabilities ?? []),
             isDefault: wire.isDefault ?? false
         )
+        try ProviderProfileValidation.validate(profile)
+        return profile
     }
+}
 
-    private static func validateSecretRef(_ ref: String, profileID: String) throws {
-        guard ref.hasPrefix(referencePrefix) else {
-            throw ProviderConfigError.invalidSecretRef(profileID)
-        }
-        let remainder = ref.dropFirst(Self.referencePrefix.count)
-        guard let slash = remainder.firstIndex(of: "/"), slash > remainder.startIndex,
-              !remainder[remainder.index(after: slash)...].isEmpty
-        else {
-            throw ProviderConfigError.invalidSecretRef(profileID)
-        }
+/// Serializes the validated profile set back to the versioned wire format.
+/// Only references are written: secrets stay in the Keychain.
+public enum ProviderConfigEncoder {
+    public static func encode(profiles: [ProviderProfile], defaultProfileID: String) throws -> Data {
+        let registry = try ProviderRegistry(profiles: profiles, defaultProfileID: defaultProfileID)
+        let output = ProviderConfigOutput(
+            schemaVersion: ProviderConfigDecoder.schemaVersion,
+            defaultProfileID: defaultProfileID,
+            profiles: registry.profiles.map { ProviderProfileOutput(profile: $0, defaultID: defaultProfileID) }
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        return try encoder.encode(output)
     }
+}
 
-    private static func isCredentialHeader(_ name: String) -> Bool {
-        let normalized = name.lowercased().filter(\.isLetter)
-        return credentialWords.contains { normalized.contains($0) }
-    }
-
+extension ProviderConfigDecoder {
     private static func path(for error: Error) -> String {
         guard let decodingError = error as? DecodingError else { return "config.json" }
         let components: [String]

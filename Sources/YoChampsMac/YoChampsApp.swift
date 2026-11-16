@@ -21,8 +21,9 @@ struct YoChampsApp: App {
             }
             Button("Show Champ (M3)") {}
                 .disabled(true)
-            Button("Settings… (M2)") {}
-                .disabled(true)
+            Button("Settings…") {
+                appDelegate.showSettings()
+            }
 
             Divider()
 
@@ -38,6 +39,7 @@ struct YoChampsApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let logger = Logger(subsystem: "com.yurioliveira.yochamps", category: "app")
     private var panelController: AskPanelController?
+    private var settingsController: SettingsPanelController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // LSUIElement already hides the Dock icon; keep the process as an
@@ -49,10 +51,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let model = CompanionViewModel(engine: Self.makeEngine())
         panelController = AskPanelController(model: model)
+
+        let configStore = ProviderConfigFileStore()
+        settingsController = SettingsPanelController(
+            store: configStore,
+            secrets: KeychainSecretStore(),
+            transport: URLSessionLLMTransport()
+        )
         if isDemo {
             panelController?.showDemo()
         } else {
             panelController?.show()
+            // No profile yet: onboarding is the first thing the user sees.
+            // An unreadable config is reported, never mistaken for onboarding.
+            Task { [weak self] in
+                guard let self else { return }
+                do {
+                    if try await configStore.load() == nil {
+                        settingsController?.show()
+                    }
+                } catch {
+                    logger.error("config load failed: \(String(describing: error), privacy: .private)")
+                    settingsController?.show()
+                }
+            }
         }
     }
 
@@ -74,6 +96,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showPanel() {
         panelController?.show()
+    }
+
+    func showSettings() {
+        settingsController?.show()
     }
 
     private static func makeEngine() -> CompanionEngine {

@@ -65,7 +65,8 @@
   a code failure — rerun the job (`gh run rerun <id> --failed`) when it happens.
   The green run cited above (`43857030588`) had both jobs complete.
 - **Pre-policy history:** M0 commits predate branch protection and are kept as
-  the baseline (ADR 0010); this is not a precedent for direct pushes.
+  the baseline (ADR 0010 → superseded by 0011); this is not a precedent for
+  direct pushes.
 - **Unsigned local builds:** expected for V0; distribution is post-V0.
 
 ## Deferred review suggestions (non-blocking)

@@ -159,8 +159,9 @@ public protocol SecretStore: Sendable {
 }
 ```
 
-M0–M1 use an in-memory store; M2 adds JSON + Keychain implementations in
-`YoChampsMac`.
+M0–M1 use an in-memory store; M2 adds `FileConversationStore` (Core, injected
+directory, `schemaVersion` 1 + migrator, atomic writes) and the Keychain
+`SecretStore` in `YoChampsMac`.
 
 ## Provider profiles
 

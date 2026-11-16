@@ -5,10 +5,12 @@ import PackageDescription
 /// keeps building (and testing) on Linux CI without AppKit/SwiftUI.
 var products: [Product] = [
     .library(name: "YoChampsCore", targets: ["YoChampsCore"]),
+    .library(name: "YoChampsProviders", targets: ["YoChampsProviders"]),
 ]
 
 var targets: [Target] = [
     .target(name: "YoChampsCore"),
+    .target(name: "YoChampsProviders", dependencies: ["YoChampsCore"]),
 ]
 
 #if os(macOS)
@@ -30,6 +32,17 @@ targets.append(
             "YoChampsCore",
             // Command Line Tools ship a Testing.framework without
             // lib_TestingInterop; the official package builds everywhere.
+            .product(name: "Testing", package: "swift-testing"),
+        ]
+    )
+)
+
+targets.append(
+    .testTarget(
+        name: "YoChampsProvidersTests",
+        dependencies: [
+            "YoChampsProviders",
+            "YoChampsCore",
             .product(name: "Testing", package: "swift-testing"),
         ]
     )

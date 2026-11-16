@@ -59,17 +59,20 @@ final class SettingsViewModel: ObservableObject {
     private let store: ProviderConfigFileStore
     private let secrets: any SecretStore
     private let transport: any LLMHTTPTransport
+    private let onSaved: () -> Void
     private var profileID: String?
     private var work: Task<Void, Never>?
 
     init(
         store: ProviderConfigFileStore,
         secrets: any SecretStore,
-        transport: any LLMHTTPTransport
+        transport: any LLMHTTPTransport,
+        onSaved: @escaping () -> Void = {}
     ) {
         self.store = store
         self.secrets = secrets
         self.transport = transport
+        self.onSaved = onSaved
     }
 
     func load() async {
@@ -146,6 +149,7 @@ final class SettingsViewModel: ObservableObject {
             apiKey = ""
             isOnboarding = false
             message = .info("Profile saved")
+            onSaved()
         } catch is CancellationError {
             message = .info("Cancelled")
         } catch {
@@ -183,7 +187,7 @@ final class SettingsViewModel: ObservableObject {
             let request = try LLMRequest(
                 model: validatedModel(),
                 messages: [.init(role: .user, content: "Reply with OK")],
-                maxTokens: 1,
+                maxTokens: 16,
                 headers: requestHeaders
             )
             var answer = ""

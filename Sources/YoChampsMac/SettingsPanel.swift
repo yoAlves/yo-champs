@@ -11,9 +11,15 @@ final class SettingsPanelController: NSObject, NSWindowDelegate {
     init(
         store: ProviderConfigFileStore,
         secrets: any SecretStore,
-        transport: any LLMHTTPTransport
+        transport: any LLMHTTPTransport,
+        onSaved: @escaping () -> Void
     ) {
-        model = SettingsViewModel(store: store, secrets: secrets, transport: transport)
+        model = SettingsViewModel(
+            store: store,
+            secrets: secrets,
+            transport: transport,
+            onSaved: onSaved
+        )
     }
 
     func show() {

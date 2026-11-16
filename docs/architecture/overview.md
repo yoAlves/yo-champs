@@ -22,7 +22,8 @@ rendering.
   model, vendor or endpoint names.
 - Test targets may import any module.
 
-Enforcement: review + a future grep-based CI check for provider names in Core
+Enforcement: review + case-insensitive grep over `Sources/YoChampsCore` (manual
+evidence in `docs/delivery/status.md`; no dedicated CI step in V0)
 (lands with M2). Today the Core contains only `CompanionState` and the mascot
 manifest contract.
 
@@ -60,7 +61,7 @@ full Xcode and will add an Xcode/XcodeGen project when `make test-ui` lands
 | Path | Contents |
 |---|---|
 | `~/Library/Application Support/YoChamps/config.json` | non-secret config, profiles, `secretRef` |
-| `~/Library/Application Support/YoChamps/history/` | conversations (JSON in V0) |
+| `~/Library/Application Support/YoChamps/history.json` | conversations (JSON in V0) |
 | `~/Library/Application Support/YoChamps/Mascots/<id>/` | local packs |
 | Keychain (service `com.yurioliveira.yochamps`) | API keys |
 

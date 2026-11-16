@@ -57,7 +57,7 @@ mascot-validate: ## Validate the default pack and local packs
 
 verify: lint test build mascot-validate secrets ## Full gate: lint, test, build, pack, secrets
 
-ci: verify ## Exactly what GitHub Actions runs
+ci: verify provider-check ## Exactly what GitHub Actions runs
 
 deploy: ## Release build + install to ~/Applications/YoChamps.app + open (local only)
 	@./scripts/deploy.sh

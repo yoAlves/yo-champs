@@ -10,11 +10,19 @@ final class CompanionViewModel: ObservableObject {
     @Published private(set) var state: CompanionState = .idle
     @Published private(set) var errorMessage: String?
 
-    private let engine: CompanionEngine
+    /// Resolved on every action so a profile saved in Settings reaches the
+    /// ask path without rebuilding the panel or its window.
+    typealias EngineProvider = () -> CompanionEngine
+
+    private let engineProvider: EngineProvider
     private var turn: Task<Void, Never>?
 
-    init(engine: CompanionEngine) {
-        self.engine = engine
+    init(engineProvider: @escaping EngineProvider) {
+        self.engineProvider = engineProvider
+    }
+
+    convenience init(engine: CompanionEngine) {
+        self.init(engineProvider: { engine })
     }
 
     var isBusy: Bool {
@@ -54,7 +62,7 @@ final class CompanionViewModel: ObservableObject {
             guard let self else {
                 return
             }
-            let stream = await engine.ask(trimmed)
+            let stream = await engineProvider().ask(trimmed)
             for await event in stream {
                 handle(event)
             }
@@ -66,7 +74,7 @@ final class CompanionViewModel: ObservableObject {
         guard isBusy else {
             return
         }
-        Task { await engine.cancel() }
+        Task { await engineProvider().cancel() }
     }
 
     func newChat() {
@@ -80,7 +88,7 @@ final class CompanionViewModel: ObservableObject {
                 return
             }
             do {
-                try await engine.newChat()
+                try await engineProvider().newChat()
             } catch {
                 errorMessage = error.localizedDescription
             }

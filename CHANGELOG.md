@@ -11,6 +11,12 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+### Added
+
+- M2: versioned provider profiles and config with Keychain-backed secrets.
+- M2: OpenAI-compatible streaming client, SSE parser, typed errors and retries.
+- M2: Settings/onboarding, JSON conversation history and a local provider check.
+
 ## [0.0.0-m0] - 2026-11-16
 
 First public milestone (prerelease). Foundation only; the conversation loop

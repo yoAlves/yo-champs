@@ -28,7 +28,8 @@
 - `make provider-check` (exit 0): stub on 127.0.0.1, ephemeral `URLSession` transport,
   real SSE parse → `provider-check: OK`.
 - Commits on the branch: `e84c13f` (Core contracts), `7dc17fa` (SSE client),
-  `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings).
+  `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings),
+  `7ae3497` (app wiring + provider-check).
 
 ### Gaps and risks
 

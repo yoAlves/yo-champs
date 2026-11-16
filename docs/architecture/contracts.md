@@ -52,7 +52,8 @@ public enum LLMError: Error, Sendable, Equatable, CustomStringConvertible {
 ```
 
 Rules: providers map transport errors and HTTP status codes to these domain
-cases; Core never sees HTTP status codes, JSON envelopes or vendor names.
+cases; Core never sees JSON envelopes or vendor names. The only transport
+detail Core carries is `LLMError.server(status:)` for an unmapped 5xx.
 `YoChampsProviders` keeps protocol logic pure — an injected `LLMHTTPTransport`
 owns the network boundary — and the retry delay/timeouts are configured data.
 Descriptions are display-safe: provider payload text is never echoed.

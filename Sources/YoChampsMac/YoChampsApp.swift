@@ -5,15 +5,15 @@ import YoChampsCore
 import YoChampsNetwork
 import YoChampsProviders
 
-/// M1 shell: menu bar item, floating ask panel, mock conversation loop.
-/// Settings (M2) and the character renderer (M3) stay disabled until then.
+/// M2 shell: menu bar item, floating ask panel, real provider conversation,
+/// settings/onboarding and JSON history. The character renderer arrives in M3.
 @main
 struct YoChampsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         MenuBarExtra("Yo Champs", systemImage: "paperclip") {
-            Text("Yo Champs 0.0.0 — conversation loop (M1)")
+            Text("Yo Champs 0.0.0")
 
             Divider()
 
@@ -36,11 +36,22 @@ struct YoChampsApp: App {
     }
 }
 
+/// Holds the current engine so the view model can resolve it per action.
+@MainActor
+final class EngineBox {
+    var engine: CompanionEngine
+
+    init(engine: CompanionEngine) {
+        self.engine = engine
+    }
+}
+
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let logger = Logger(subsystem: "com.yurioliveira.yochamps", category: "app")
     private var panelController: AskPanelController?
     private var settingsController: SettingsPanelController?
+    private var engineBox: EngineBox?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // LSUIElement already hides the Dock icon; keep the process as an
@@ -50,14 +61,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
         logger.info("launch demo=\(isDemo, privacy: .public)")
 
-        let model = CompanionViewModel(engine: Self.makeEngine())
-        panelController = AskPanelController(model: model)
+        let box = EngineBox(engine: Self.makeEngine())
+        engineBox = box
+        panelController = AskPanelController(
+            model: CompanionViewModel(engineProvider: { box.engine })
+        )
 
         let configStore = ProviderConfigFileStore()
         settingsController = SettingsPanelController(
             store: configStore,
             secrets: KeychainSecretStore(),
-            transport: URLSessionLLMTransport()
+            transport: URLSessionLLMTransport(),
+            onSaved: { [weak self] in
+                self?.reloadEngine()
+            }
         )
         if isDemo {
             panelController?.showDemo()
@@ -103,6 +120,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         settingsController?.show()
     }
 
+    /// Settings saved a profile: the next ask must use it, not the engine that
+    /// was composed before onboarding.
+    private func reloadEngine() {
+        guard let engineBox else { return }
+        Task { await engineBox.engine.cancel() }
+        engineBox.engine = Self.makeEngine()
+    }
+
     private static func makeEngine() -> CompanionEngine {
         let isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
         let systemPrompt = "You are Champ, a concise desktop companion. "
@@ -122,7 +147,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         guard let registry = try? ProviderConfigFileStore().loadSync() else {
             return CompanionEngine(
-                provider: MockProvider(),
+                provider: UnconfiguredProvider(),
                 agent: mockAgent,
                 store: InMemoryConversationStore()
             )
@@ -138,6 +163,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let transport = KeychainAuthTransport(
             secrets: KeychainSecretStore(),
             secretRef: profile.secretRef,
+            extraHeaders: profile.headers,
             base: URLSessionLLMTransport()
         )
         let provider = OpenAICompatibleProvider(configuration: configuration, transport: transport)

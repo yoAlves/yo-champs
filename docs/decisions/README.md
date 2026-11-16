@@ -32,6 +32,7 @@ the load-bearing ones; the log stays as the index of record.
 | D25 | `.gitignore` covers scratch/notes/.specs/auth/.env; `.env.example` is the only example | prevents leaks and noise | “just don’t commit it” | 0006 |
 | D26 | Changelog is append-only, merged with git's union driver | parallel additive entries merge without conflict or loss | manual conflict per PR, rewriting released sections | 0009 |
 | D27 | GitFlow with protected `main`/`develop` | PR + required checks, no direct pushes or admin bypass | direct commits, unprotected main | 0010 |
+| D28 | PR to `main` only; no `develop` | solo/local V0: CI + protected main is the gate; fewer branches and no back-merges | GitFlow develop/release overhead | 0011 |
 
 ## ADRs
 
@@ -45,3 +46,4 @@ the load-bearing ones; the log stays as the index of record.
 - [0008 — No MCP in V0](0008-no-mcp-v0.md)
 - [0009 — Append-only changelog with union merge](0009-append-only-changelog.md)
 - [0010 — GitFlow with protected branches](0010-gitflow-protected-branches.md)
+- [0011 — PR to main only (no develop)](0011-pr-to-main.md)

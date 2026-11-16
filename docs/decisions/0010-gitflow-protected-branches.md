@@ -1,6 +1,6 @@
 # ADR 0010 — GitFlow with protected branches
 
-**Status:** accepted (2026-11-16).
+**Status:** superseded by [ADR 0011](0011-pr-to-main.md) (2026-11-16).
 **Covers:** D27 — branching, PRs and protected branches.
 
 ## Context

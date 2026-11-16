@@ -1,8 +1,9 @@
 # Contracts
 
 These are the binding Swift-level contracts for V0. They are declared here
-before implementation so Core, providers, shell and tests agree. M0 implements
-only `CompanionState` and the mascot manifest; the rest lands in M1–M2.
+before implementation so Core, providers, shell and tests agree. M0–M1 shipped
+the mascot manifest, state, LLM/agent/context contracts, engine, mock provider
+and app shell; M2 adds profiles, a real provider, config and persistence.
 
 ## LLM provider
 
@@ -20,7 +21,9 @@ public struct LLMRequest: Codable, Sendable, Equatable {
 }
 
 public struct LLMMessage: Codable, Sendable, Equatable {
-    public enum Role: String, Codable, Sendable { case system, developer, user, assistant }
+    public enum Role: String, Codable, Sendable, CaseIterable {
+        case system, developer, user, assistant
+    }
     public let role: Role
     public let content: String
 }
@@ -35,6 +38,12 @@ public struct LLMUsage: Codable, Sendable, Equatable {
     public let promptTokens: Int?
     public let completionTokens: Int?
 }
+
+public enum LLMError: Error, Sendable, Equatable, CustomStringConvertible {
+    case provider(String)
+    case emptyResponse
+    case invalidRequest(String)
+}
 ```
 
 Rules: providers map transport errors to domain errors; Core never sees HTTP
@@ -47,8 +56,7 @@ public struct AgentDefinition: Codable, Sendable, Equatable {
     public let id: String
     public let name: String
     public let systemPrompt: String
-    public let model: String?
-    public let allowedTools: [String]
+    public let model: String
     public let style: String?
 }
 
@@ -59,6 +67,9 @@ public protocol AgentRegistry: Sendable {
 ```
 
 V0 ships one generalist agent; the registry is the extension point.
+`StaticAgentRegistry(agents:defaultID:)` is failable: it rejects duplicate ids
+and a default id that is not registered. V0 has no tool list: `Capability.tools`
+is a forward-declared flag, not implemented behaviour.
 
 ## Engine and state
 
@@ -75,12 +86,25 @@ chooses animation keywords.
 ## Context
 
 ```swift
+public struct ContextBudget: Sendable, Equatable {
+    public static let `default` = ContextBudget(maxTurns: 12, maxCharacters: 6000)
+    public let maxTurns: Int
+    public let maxCharacters: Int
+}
+
 public protocol ContextBuilder: Sendable {
-    func build(history: [LLMMessage], budget: Int) -> [LLMMessage]
+    func build(
+        systemPrompt: String,
+        history: [LLMMessage],
+        question: String,
+        budget: ContextBudget
+    ) -> [LLMMessage]
 }
 ```
 
-V0 keeps the last turns that fit the budget; summarization/RAG is post-V0.
+`ContextBudget.init(maxTurns:maxCharacters:)` requires positive values.
+V0 keeps the last complete turns that fit the turn/character budget;
+summarization/RAG is post-V0.
 
 ## Storage
 
@@ -106,7 +130,7 @@ M0–M1 use an in-memory store; M2 adds JSON + Keychain implementations in
 public struct ProviderProfile: Codable, Sendable, Equatable {
     public let id: String
     public let label: String
-    public let kind: ProviderKind        // .openAICompatible in V0
+    public let kind: ProviderKind        // .compatible in V0
     public let baseURL: URL
     public let model: String
     public let headers: [String: String]
@@ -116,13 +140,22 @@ public struct ProviderProfile: Codable, Sendable, Equatable {
 }
 
 public enum ProviderKind: String, Codable, Sendable, CaseIterable {
-    case openAICompatible = "openai-compatible"
+    case compatible
 }
 
 public enum Capability: String, Codable, Sendable, CaseIterable {
     case streaming, reasoningEffort, tools, maxContext
 }
 ```
+
+Core names the compatibility protocol, never a vendor: M2's config layer maps
+the on-disk `kind` value to `ProviderKind`, so `Sources/YoChampsCore` stays free
+of vendor names. Core's synthesized `Codable` is not a persisted on-disk format;
+only the config DTO is. `config.json` has its own versioned DTO (M2 task 3), not
+this struct: the loader defaults omitted `isDefault`/`headers`/`capabilities`, maps
+the wire `kind`, and rejects duplicate or missing default profiles with a clear
+error. `secretRef` is a Keychain reference with grammar `keychain:<service>/<ref>`;
+config, logs and fixtures hold the reference only, never the key.
 
 Header placeholders: `{{conversationId}}`, `{{appVersion}}`, `{{userAgent}}`.
 No real provider ships as default.

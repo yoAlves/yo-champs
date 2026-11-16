@@ -2,9 +2,9 @@
 
 ## M2 — Real providers
 
-**State:** implementation complete; local gate green; awaiting final review and PR.
+**State:** implementation complete; local gate and PR CI green; awaiting merge.
 **Date:** 2026-11-16.
-**Branch:** `feature/m2-providers`.
+**Branch:** `feature/m2-providers` at `64ac372`; PR [#5](https://github.com/yoAlves/yo-champs/pull/5).
 
 ### Gate
 
@@ -15,6 +15,8 @@
 | Core vendor-free | pass | case-insensitive grep for vendor names over `Sources/YoChampsCore`: zero matches |
 | Typed errors | pass | `LLMError` cases for key/model/timeout/rate/server + Settings display + cancellation |
 | Persistence | pass | `FileConversationStore` restart/clear/schema tests (JSON `history.json`, schemaVersion 1) |
+| `core (linux)` (CI) | pass | [run 43941420649](https://github.com/yoAlves/yo-champs/actions/runs/43941420649), 1m3s |
+| `app + gates (macos)` (CI) | pass | same run, 7m53s on `macos-15-intel`; queue ~5s |
 
 ### Evidence
 
@@ -27,16 +29,22 @@
   - `no leaks found` (~311 KB scanned)
 - `make provider-check` (exit 0): stub on 127.0.0.1, ephemeral `URLSession` transport,
   real SSE parse → `provider-check: OK`.
+- PR CI (run 43941420649, head `64ac372`): `core (linux)` pass 1m3s,
+  `app + gates (macos)` pass 7m53s. Earlier attempts exposed arm64 runner labels
+  (`macos-15` never acquired, `macos-14-arm64` unsupported) and a 5s stub-start
+  timeout; fixed by `macos-15-intel` and a 30s readiness check in
+  `scripts/provider-check.sh`. No gate or rule was weakened.
 - Commits on the branch: `e84c13f` (Core contracts), `7dc17fa` (SSE client),
   `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings),
-  `7ae3497` (app wiring + provider-check).
+  `7ae3497` (app wiring + provider-check), `1605e4b` (integration fixes),
+  `86a1cbb`/`9187bb0` (runner), `64ac372` (stub readiness).
 
 ### Gaps and risks
 
 - No full Xcode → Settings UI and streaming visuals have no automated UI test;
   engine/contract tests and `make demo` cover behavior.
 - ADR 0003 wording and cross-host redirect blocking remain deferred; header
-  placeholders are shown in Settings but not yet expanded at request time.
+  placeholders are expanded at request time (no literal `{{…}}` is sent).
 - Real endpoint Q&A still requires a personal Keychain key; the gate uses a stub.
 
 ## M1 — Conversation loop

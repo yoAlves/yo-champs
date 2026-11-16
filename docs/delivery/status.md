@@ -4,7 +4,7 @@
 
 **State:** implementation complete; local gate green; awaiting review and PR.
 **Date:** 2026-11-16.
-**Branch:** `feature/m1-loop` (local, 6 commits ahead of `main`; not pushed yet).
+**Branch:** `feature/m1-loop` (local; PR pending).
 
 ### Gate
 

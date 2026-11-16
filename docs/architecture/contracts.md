@@ -186,14 +186,24 @@ public enum Capability: String, Codable, Sendable, CaseIterable {
 }
 ```
 
-Core names the compatibility protocol, never a vendor: M2's config layer maps
+Core names the compatibility protocol, never a vendor: the config layer maps
 the on-disk `kind` value to `ProviderKind`, so `Sources/YoChampsCore` stays free
 of vendor names. Core's synthesized `Codable` is not a persisted on-disk format;
-only the config DTO is. `config.json` has its own versioned DTO (M2 task 3), not
-this struct: the loader defaults omitted `isDefault`/`headers`/`capabilities`, maps
-the wire `kind`, and rejects duplicate or missing default profiles with a clear
-error. `secretRef` is a Keychain reference with grammar `keychain:<service>/<ref>`;
-config, logs and fixtures hold the reference only, never the key.
+only the config DTO is. `config.json` is `{schemaVersion: 1, defaultProfileID?,
+profiles: [...]}`; `ProviderConfigDecoder` defaults omitted
+`isDefault`/`headers`/`capabilities`, maps the wire `kind`, and rejects an
+unsupported schema/kind, duplicate ids, an unknown or missing default, a malformed
+`secretRef` and credential-bearing headers with typed `ProviderConfigError`s.
+The loader also rejects empty `id`/`label`/`model`/`secretRef`, a baseURL without
+an http(s) scheme and host, and competing `isDefault` flags when no id is set.
+`defaultProfileID` is the single source of truth for the default; `isDefault` is
+the fallback when it is absent and is normalized on the resolved profiles.
+`ProviderRegistry` exposes the validated profiles and resolves them by id.
+`secretRef` is a Keychain reference with grammar `keychain:<service>/<ref>` — the
+service segment is lexical only; the store owns the fixed service and uses the
+whole ref as the account. Config, logs and fixtures hold the reference only,
+never the key. The Mac shell implements `SecretStore` with the Keychain service
+`com.yurioliveira.yochamps`; tests must inject a fake, never the real Keychain.
 
 Header placeholders: `{{conversationId}}`, `{{appVersion}}`, `{{userAgent}}`.
 No real provider ships as default.

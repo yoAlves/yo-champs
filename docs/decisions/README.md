@@ -31,6 +31,7 @@ the load-bearing ones; the log stays as the index of record.
 | D24 | MCP is an executable dependency: pin, review, least privilege, opt-in | supply-chain security | auto-starting arbitrary MCP | 0008 |
 | D25 | `.gitignore` covers scratch/notes/.specs/auth/.env; `.env.example` is the only example | prevents leaks and noise | “just don’t commit it” | 0006 |
 | D26 | Changelog is append-only, merged with git's union driver | parallel additive entries merge without conflict or loss | manual conflict per PR, rewriting released sections | 0009 |
+| D27 | GitFlow with protected `main`/`develop` | PR + required checks, no direct pushes or admin bypass | direct commits, unprotected main | 0010 |
 
 ## ADRs
 
@@ -43,3 +44,4 @@ the load-bearing ones; the log stays as the index of record.
 - [0007 — Makefile-first DX and docs policy](0007-dx-and-docs.md)
 - [0008 — No MCP in V0](0008-no-mcp-v0.md)
 - [0009 — Append-only changelog with union merge](0009-append-only-changelog.md)
+- [0010 — GitFlow with protected branches](0010-gitflow-protected-branches.md)

@@ -26,6 +26,9 @@
 - `swift-testing` pinned to 6.2.4 (6.3+ links the Xcode-only `_TestingInterop`).
 - Git repo on `main`, public remote `https://github.com/yoAlves/yo-champs`;
   baseline `e121360`; pre-commit hook installed.
+- `main` is protected (PR required, checks `core (linux)`/`app + gates (macos)`,
+  admins enforced, no force push/deletion); `develop` is the integration branch
+  (GitFlow, ADR 0010).
 
 ## Evidence
 

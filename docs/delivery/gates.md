@@ -36,6 +36,20 @@ CI green means the workflow passed on the remote. A local `make ci` run is
 evidence of the same commands, but not of the remote result; record which one
 was observed.
 
+## Branching and merges (GitFlow)
+
+`main` is production; `develop` is integration. Both are protected: pull request
+required (0 approvals for the solo owner), required checks `core (linux)` and
+`app + gates (macos)`, admins enforced, no force push or deletion. Direct pushes
+are expected to fail with `GH006`.
+
+- `feature/*` → PR to `develop`.
+- `release/vX.Y.Z` → PR `develop` → `main`; tag on `main`; back-merge `main` into
+  `develop`.
+- `hotfix/*` → PR to `main`; back-merge into `develop`.
+- Work only on branches; never use an admin bypass or disable protection to land
+  a change. M0 history is the pre-policy baseline and is not rewritten.
+
 ## Evidence
 
 Append to `docs/delivery/status.md`:

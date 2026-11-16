@@ -70,6 +70,25 @@ M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
 - Contract tests for the provider live in `YoChampsProviders` from M2.
 - Do not weaken tests or gates to make a milestone look green.
 
+## Branching and releases (GitFlow)
+
+`main` is production/release-only; `develop` is the integration branch. Both are
+protected on GitHub: **no direct pushes**, PR required, required checks
+`core (linux)` and `app + gates (macos)`, admins enforced, no force push or
+deletion.
+
+- `feature/<slug>` branches from `develop` and merges back via PR into `develop`.
+- `release/vX.Y.Z` branches from `develop` and merges via PR into `main`; tag
+  `vX.Y.Z` on `main`; then back-merge `main` into `develop`.
+- `hotfix/<slug>` branches from `main`, merges via PR into `main`; back-merge
+  into `develop`.
+- Never commit, push, merge or rebase directly on `main`/`develop`. A blocked
+  push is the protection working: move the work to a branch and open a PR.
+- Conventional Commits; merge commits preserve history; keep the PR branch up
+  to date with its base before merging.
+- M0 history predates this policy; it is kept as the baseline and is not
+  rewritten.
+
 ## Milestones and gates
 
 `docs/delivery/milestones/M0.md` … `M4.md` are binding contracts. A milestone

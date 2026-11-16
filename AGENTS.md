@@ -70,27 +70,23 @@ M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
 - Contract tests for the provider live in `YoChampsProviders` from M2.
 - Do not weaken tests or gates to make a milestone look green.
 
-## Branching and releases (GitFlow)
+## Branching and releases (PR to main)
 
-`main` is production/release-only; `develop` is the integration branch. Both are
-protected on GitHub: **no direct pushes**, pull request required (0 approvals,
-solo owner), required checks `core (linux)` and `app + gates (macos)`; admins
-are enforced, force pushes and deletions are blocked. `main` additionally
-requires the branch to be up to date (`strict`); `develop` does not.
+`main` is the only long-lived branch and is protected on GitHub: **no direct
+pushes**, pull request required (0 approvals, solo owner), required checks
+`core (linux)` and `app + gates (macos)`, branches must be up to date (`strict`),
+admins enforced, no force push or deletion, conversation resolution required.
 
-- Bootstrap: `develop` was created from `main` when this policy landed; the
-  adoption change is PR #1.
-- `feature/<slug>` branches from `develop` and merges back via PR into `develop`.
-- `release/vX.Y.Z` branches from `develop` and merges via PR into `main`; tag
-  `vX.Y.Z` on `main`; then back-merge `main` into `develop` via a PR.
-- `hotfix/<slug>` branches from `main`, merges via PR into `main`, is tagged
-  `vX.Y.Z` on `main`, and is back-merged into `develop` via a PR.
-- Never commit, push, merge or rebase directly on `main`/`develop`. A blocked
-  push is the protection working: move the work to a branch and open a PR.
-- Conventional Commits; merge commits preserve history; keep the PR branch up
-  to date with its base before merging.
-- M0 history predates this policy; it is kept as the baseline and is not
-  rewritten.
+- Branch from `main` with a typed prefix: `feature/<slug>`, `fix/<slug>`,
+  `docs/<slug>`, `chore/<slug>` or `ci/<slug>`.
+- Open a PR into `main`, wait for both checks, then merge with a merge commit.
+- No `develop` or long-lived release branches in V0: a release is a `vX.Y.Z` tag
+  on `main` after the PR merges. A one-off `release/vX.Y.Z` branch is allowed for
+  the changelog cut and is PR'd into `main`.
+- Never commit, push, merge or rebase directly on `main`. A blocked push
+  (`GH006`) is the protection working: move the work to a branch and open a PR.
+- Conventional Commits; keep the PR branch up to date with `main`.
+- M0 history predates this policy; it is kept as the baseline, not a precedent.
 
 ## Milestones and gates
 
@@ -117,11 +113,10 @@ kept.
 - Cutting a release is the only rewrite: move entries to a new
   `## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
   `[Unreleased]` compare link to the new tag, and leave `## [Unreleased]` empty.
-  Do it on the `release/vX.Y.Z` branch cut from `develop` (rebased on the current
-  `main` only if that branch already exists), with no open or in-flight
-  changelog branches; after merging, verify entries are in the right section
-  (union can glue adjacent bullets into the released section and drop blank
-  lines).
+  Do it on a `release/vX.Y.Z` branch cut from `main` (or the PR branch doing the
+  cut), with no open or in-flight changelog branches; after merging, verify
+  entries are in the right section (union can glue adjacent bullets into the
+  released section and drop blank lines).
 - GitHub/GitLab web merges may ignore merge drivers; the append-only discipline
   is the real guarantee.
 

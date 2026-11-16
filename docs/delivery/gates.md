@@ -36,20 +36,19 @@ CI green means the workflow passed on the remote. A local `make ci` run is
 evidence of the same commands, but not of the remote result; record which one
 was observed.
 
-## Branching and merges (GitFlow)
+## Branching and merges (PR to main)
 
-`main` is production; `develop` is integration. Both are protected: pull request
-required (0 approvals for the solo owner), required checks `core (linux)` and
-`app + gates (macos)`, admins enforced, no force push or deletion. `main` also
-requires branches up to date (`strict`); `develop` does not. Direct pushes are
-expected to fail with `GH006`.
+`main` is the only long-lived branch, protected: pull request required (0
+approvals for the solo owner), required checks `core (linux)` and
+`app + gates (macos)`, branches up to date (`strict`), admins enforced, no force
+push or deletion, conversation resolution. Direct pushes are expected to fail
+with `GH006`. The short-lived `develop` experiment was removed; the flow is
+PR → `main` (ADR 0011).
 
-- Bootstrap: `develop` was created from `main` when the policy landed (PR #1 is
-  the adoption change).
-- `feature/*` → PR to `develop`.
-- `release/vX.Y.Z` → PR `develop` → `main`; tag on `main`; back-merge `main` into
-  `develop` via a PR.
-- `hotfix/*` → PR to `main`, tag on `main`, back-merge into `develop` via a PR.
+- Branch from `main` (`feature/*`, `fix/*`, `docs/*`, `chore/*`, `ci/*`), open a
+  PR to `main`, wait for both checks, merge with a merge commit.
+- Releases are `vX.Y.Z` tags on `main`; a one-off `release/vX.Y.Z` branch may
+  carry the changelog cut through a PR.
 - Work only on branches; never use an admin bypass or disable protection to land
   a change. M0 history is the pre-policy baseline and is not rewritten.
 
@@ -94,12 +93,11 @@ a released section, and that no entry was dropped.
 Cutting a release is the only rewrite: move entries into a new
 `## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
 `[Unreleased]` compare link to the new tag, leave `[Unreleased]` empty, and do it
-on the `release/vX.Y.Z` branch cut from `develop` (rebased on the current `main`
-only if that branch already exists), with no open or in-flight changelog
-branches. After merging, verify entries are in the right section and the blank
-line before the new heading survived (union can glue adjacent bullets into the
-released section). Web merges may ignore merge drivers; the discipline is the
-guarantee (ADR 0009).
+on a `release/vX.Y.Z` branch cut from `main` (or the PR branch doing the cut),
+with no open or in-flight changelog branches. After merging, verify entries are
+in the right section and the blank line before the new heading survived (union
+can glue adjacent bullets into the released section). Web merges may ignore merge
+drivers; the discipline is the guarantee (ADR 0009).
 
 ## Review budget
 

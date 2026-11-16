@@ -24,12 +24,13 @@
 - macOS 26.5.2 (arm64), Swift 6.3.2, Command Line Tools only (no full Xcode).
 - SwiftLint 0.65.1, SwiftFormat 0.64.7, gitleaks 8.30.1, Homebrew present.
 - `swift-testing` pinned to 6.2.4 (6.3+ links the Xcode-only `_TestingInterop`).
-- Git repo with `main` and `develop`, public remote
+- Git repo with `main` only, public remote
   `https://github.com/yoAlves/yo-champs`; baseline `e121360`; pre-commit hook
   installed.
-- `main`/`develop` are protected (PR required, 0 approvals, checks
-  `core (linux)`/`app + gates (macos)`, admins enforced, no force push/deletion);
-  `main` is `strict`, `develop` is not (GitFlow, ADR 0010).
+- `main` is protected (PR required, 0 approvals, strict up-to-date, checks
+  `core (linux)`/`app + gates (macos)`, admins enforced, no force push/deletion,
+  conversation resolution). Short-lived `develop` was removed; flow is PR → main
+  (ADR 0011).
 
 ## Evidence
 
@@ -64,7 +65,8 @@
   a code failure — rerun the job (`gh run rerun <id> --failed`) when it happens.
   The green run cited above (`43857030588`) had both jobs complete.
 - **Pre-policy history:** M0 commits predate branch protection and are kept as
-  the baseline (ADR 0010); this is not a precedent for direct pushes.
+  the baseline (ADR 0010 → superseded by 0011); this is not a precedent for
+  direct pushes.
 - **Unsigned local builds:** expected for V0; distribution is post-V0.
 
 ## Deferred review suggestions (non-blocking)

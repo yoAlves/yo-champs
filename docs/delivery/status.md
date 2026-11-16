@@ -1,10 +1,53 @@
 # Status
 
+## M1 — Conversation loop
+
+**State:** implementation complete; local gate green; awaiting review and PR.
+**Date:** 2026-11-16.
+**Branch:** `feature/m1-loop` (local; PR pending).
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make test` | pass | 45 tests / 9 suites, 0 failures (3 consecutive runs for MockProvider; twice at final gate) |
+| `make lint` | pass | SwiftFormat 0/30 need formatting; SwiftLint 0 violations in 28 files |
+| `make verify` | pass | exit 0: lint + 45 tests + app build + 1 pack + gitleaks no leaks |
+| `make demo` | pass | exit 0; debug bundle launched with `--demo`; PID observed; fixture question auto-asked |
+| URL scheme + lifecycle | pass | `yochamps://open` registered in Info.plist; log `url open schemes=yochamps`; log `launch demo=true` |
+| Core vendor-free | pass | case-insensitive grep for mock/vendor names in `Sources/YoChampsCore`: no matches |
+| PR + CI + review | pass | [PR #4](https://github.com/yoAlves/yo-champs/pull/4) with `--assignee @me`; `core (linux)` and `app + gates (macos)` green ([run 43884012520](https://github.com/yoAlves/yo-champs/actions/runs/43884012520)); review 0 critical / 0 important after fix; merge commit via PR |
+
+### Evidence
+
+- `make verify` (exit 0, run twice):
+  - `0/30 files require formatting, 34 files skipped.`
+  - `Done linting! Found 0 violations, 0 serious in 28 files.`
+  - `✔ Test run with 45 tests in 9 suites passed after 0.006 seconds.`
+  - `Build of product 'YoChampsMac' complete! (0.42s)`
+  - `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`
+  - `no leaks found` (~193 KB scanned)
+- Cancellation is tested end to end: engine turns are dropped on cancel, and a
+  consumer abandoning the stream cancels the provider (two tests verified by
+  mutation — removing the guards made exactly those two fail).
+- Lifecycle log via `/usr/bin/log show --info --predicate ...`:
+  `launch demo=true`, `url open schemes=yochamps`.
+- Full milestone contract: `milestones/M1.md`.
+
+### Gaps and risks
+
+- No full Xcode → no `test-ui`, no automated screenshot of panel streaming.
+  Manual visual confirmation of bubble streaming and Esc is still owed; engine
+  behaviour is covered by tests.
+- `main` is protected; push/PR/merge require owner approval.
+
+## M0 — Foundation (baseline)
+
 **Milestone:** M0 — Foundation.
-**State:** complete — local gate, review, clean clone, CI and deploy green. M1 not started.
+**State:** complete — local gate, review, clean clone, CI and deploy green.
 **Date:** 2026-11-16.
 
-## Gate
+### Gate
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -19,7 +62,7 @@
 | Public release | pass | prerelease `v0.0.0-m0` with notes in `docs/delivery/releases/M0.md` |
 | Review | pass | full review: 0 critical / 4 important fixed with tests; focused re-review: 0 critical / 0 important, 8 non-blocking suggestions |
 
-## Environment
+### Environment
 
 - macOS 26.5.2 (arm64), Swift 6.3.2, Command Line Tools only (no full Xcode).
 - SwiftLint 0.65.1, SwiftFormat 0.64.7, gitleaks 8.30.1, Homebrew present.
@@ -32,7 +75,7 @@
   conversation resolution). Short-lived `develop` was removed; flow is PR → main
   (ADR 0011).
 
-## Evidence
+### Evidence (M0)
 
 - `make verify`:
   - `swiftformat --lint`: `0/11 files require formatting`.
@@ -55,7 +98,7 @@
   `e121360` commit.
 - The app was left running.
 
-## Gaps and risks
+### Gaps and risks (M0)
 
 - **No full Xcode:** `xcodebuild`/XCUITest unavailable. M0 uses SwiftPM +
   `scripts/bundle.sh` (ADR 0002); `make test-ui` is blocked until Xcode is
@@ -69,7 +112,7 @@
   direct pushes.
 - **Unsigned local builds:** expected for V0; distribution is post-V0.
 
-## Deferred review suggestions (non-blocking)
+### Deferred review suggestions (non-blocking)
 
 1. Local-pack discovery uses `try?`; an unreadable `Mascots` directory would be
    skipped silently instead of failing the gate.
@@ -87,7 +130,7 @@
 8. `docs/product/v0.md` field list omits `schemaVersion` and says the validator
    checks "license" (it enforces non-empty only).
 
-## Rulings
+### Rulings (M0)
 
 - **M0 app packaging:** SwiftPM executable + `scripts/bundle.sh` instead of an
   XcodeGen project, because the machine has no Xcode. Cost if wrong: M1/M3 must

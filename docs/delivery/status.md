@@ -1,8 +1,8 @@
 # Status
 
 **Milestone:** M0 — Foundation.
-**State:** local gate green; review passed; remote CI and clean-clone gate pending.
-**Date:** 2026-11-15.
+**State:** local gate green, review passed, clean clone green; remote CI pending.
+**Date:** 2026-11-16.
 
 ## Gate
 
@@ -12,9 +12,10 @@
 | `make doctor` | pass | `doctor: 0 failure(s), 5 warning(s)` (expected warnings); installed app present |
 | `make verify` | pass | SwiftFormat clean; SwiftLint 0 violations; 18 tests pass in 3 suites; app build; default + local packs validated; gitleaks no leaks |
 | `make ci` | pass | same as `make verify` (alias), exit 0 |
-| `make deploy` opens menu bar app | pass (process/plist) | `installed: ~/Applications/YoChamps.app`; PID running from that bundle; `LSUIElement => true`; ad-hoc signature. Visual menu bar item pending human confirmation |
-| Clean clone → bootstrap → verify → deploy | pending | no git repository/remote yet |
-| CI on remote | pending | workflow added; no git remote yet |
+| `make deploy` opens menu bar app | pass | `installed: ~/Applications/YoChamps.app`; PID running; `LSUIElement => true`; ad-hoc signature; menu bar item visibly confirmed by the owner |
+| Git baseline + pre-commit hook | pass | commit `e121360` on `main`; hook ran gitleaks + lint on the commit; `.build/` and `.specs/` ignored |
+| Clean clone → bootstrap → verify | pass | local clone 764 KB (no `.build`/`.specs`); `make verify` green; clean tree |
+| CI on remote | pending | workflow added; no git remote configured yet |
 | Review | pass | full review: 0 critical / 4 important fixed with tests; focused re-review: 0 critical / 0 important, 8 non-blocking suggestions |
 
 ## Environment
@@ -22,6 +23,7 @@
 - macOS 26.5.2 (arm64), Swift 6.3.2, Command Line Tools only (no full Xcode).
 - SwiftLint 0.65.1, SwiftFormat 0.64.7, gitleaks 8.30.1, Homebrew present.
 - `swift-testing` pinned to 6.2.4 (6.3+ links the Xcode-only `_TestingInterop`).
+- Git repo initialized on `main`; commit `e121360`; pre-commit hook installed.
 
 ## Evidence
 
@@ -37,7 +39,13 @@
 - `make deploy`: `installed: ~/Applications/YoChamps.app`; process
   `.../YoChamps.app/Contents/MacOS/YoChamps` running; Info.plist
   `CFBundleIdentifier=com.yurioliveira.yochamps`, `LSUIElement=true`;
-  `Signature=adhoc`, `TeamIdentifier=not set`.
+  `Signature=adhoc`, `TeamIdentifier=not set`; menu bar item confirmed by the
+  owner in a screenshot.
+- Clean clone: `git clone` of `e121360` (764 KB, no `.build`/`.specs`);
+  `make bootstrap` resolved from `Package.resolved`; `make verify` green with
+  18 tests, 1 pack, no leaks; clone working tree clean.
+- Pre-commit hook: gitleaks `no leaks found` + SwiftFormat/SwiftLint clean on the
+  `e121360` commit.
 - The app was left running.
 
 ## Gaps and risks
@@ -46,12 +54,9 @@
   `scripts/bundle.sh` (ADR 0002); `make test-ui` is blocked until Xcode is
   installed (M1+ dependency to resolve).
 - **No git remote:** the CI workflow exists but its remote result cannot be
-  observed until the repo is initialized, pushed and Actions runs. Local
-  `make ci` (= `make verify`) is the evidence until then. The clean-clone gate
-  is blocked for the same reason.
+  observed until a remote is created and Actions runs. Local `make ci`
+  (= `make verify`) and the clean-clone run are the evidence until then.
 - **Unsigned local builds:** expected for V0; distribution is post-V0.
-- **Menu bar visual check:** process and `LSUIElement` are verified; a human
-  still needs to confirm the item is visible and Quit works.
 
 ## Deferred review suggestions (non-blocking)
 

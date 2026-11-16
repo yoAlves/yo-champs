@@ -35,4 +35,13 @@ struct LLMContractsTests {
         #expect(LLMError.provider("boom") == .provider("boom"))
         #expect(LLMError.emptyResponse.description.contains("empty"))
     }
+
+    @Test("provider failures have distinct, display-safe cases")
+    func actionableErrors() {
+        #expect(LLMError.unauthorized.description.contains("key"))
+        #expect(LLMError.invalidModel("tiny").description.contains("tiny"))
+        #expect(LLMError.rateLimited.description.contains("rate"))
+        #expect(LLMError.timedOut.description.contains("timed out"))
+        #expect(LLMError.server(status: 503).description.contains("503"))
+    }
 }

@@ -43,11 +43,49 @@ public enum LLMError: Error, Sendable, Equatable, CustomStringConvertible {
     case provider(String)
     case emptyResponse
     case invalidRequest(String)
+    case unauthorized
+    case invalidModel(String)
+    case rateLimited
+    case timedOut
+    case server(status: Int)
 }
 ```
 
-Rules: providers map transport errors to domain errors; Core never sees HTTP
-status codes, JSON envelopes or vendor names.
+Rules: providers map transport errors and HTTP status codes to these domain
+cases; Core never sees HTTP status codes, JSON envelopes or vendor names.
+`YoChampsProviders` keeps protocol logic pure — an injected `LLMHTTPTransport`
+owns the network boundary — and the retry delay/timeouts are configured data.
+Descriptions are display-safe: provider payload text is never echoed.
+
+```swift
+public struct LLMHTTPRequest: Sendable, Equatable {
+    public let url: URL
+    public let headers: [String: String]
+    public let body: Data
+    public let timeout: Duration
+}
+
+public struct LLMHTTPResponse: Sendable {
+    public let statusCode: Int
+    public let body: AsyncThrowingStream<UInt8, Error>
+}
+
+public enum LLMTransportError: Error, Sendable, Equatable {
+    case timedOut
+    case connection(String)
+}
+
+public protocol LLMHTTPTransport: Sendable {
+    func send(_ request: LLMHTTPRequest) async throws -> LLMHTTPResponse
+}
+```
+
+The transport applies `timeout`, its `body` is single-consumer and must cancel
+its underlying task when iteration stops; `connection` messages are shown to
+users and must never include request or response payloads. Retries apply only
+to 5xx responses and transport errors, paced by the injected clock; 429, 401,
+404 and cancellation are never retried. `.done` is emitted only after the
+response has been fully validated and contained text.
 
 ## Agent
 

@@ -33,8 +33,9 @@ build: ## Build the debug app bundle
 run: build ## Build and open the debug app
 	@open "$(BUNDLE)"
 
-demo: ## Open with MockProvider (M1+)
-	@echo "demo: MockProvider and the ask panel land in M1" >&2; exit 2
+demo: build ## Open with MockProvider and a fixture question (M1)
+	@./scripts/stop.sh
+	@open "$(BUNDLE)" --args --demo
 
 test: ## Run unit and contract tests
 	@./scripts/test.sh

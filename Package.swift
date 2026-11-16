@@ -20,7 +20,10 @@ var targets: [Target] = [
     ]
 
     targets += [
-        .executableTarget(name: "YoChampsMac", dependencies: ["YoChampsCore"]),
+        .executableTarget(
+            name: "YoChampsMac",
+            dependencies: ["YoChampsCore", "YoChampsProviders"]
+        ),
         .executableTarget(name: "YoChampsMascotValidator", dependencies: ["YoChampsCore"]),
     ]
 #endif

@@ -7,17 +7,24 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+## [0.0.0-m0] - 2026-11-16
+
+First public milestone (prerelease). Foundation only; the conversation loop
+starts in M1.
+
 ### Added
 
 - SwiftPM workspace: `YoChampsCore`, `YoChampsMac`, `YoChampsMascotValidator`.
 - Menu bar shell (`LSUIElement`, no Dock icon) with Quit.
 - Makefile-first DX: bootstrap, doctor, build, run, test, format, lint,
-  secrets, mascot-validate, verify, ci, deploy, restart, stop, open, logs,
-  config, mascots, install-hooks, clean.
+  secrets, mascot-validate, verify, ci, deploy (local), restart, stop, open,
+  logs, config, mascots, install-hooks, clean.
 - GitHub Actions CI: Linux Core tests, macOS gates.
 - Mascot pack contract, validator and placeholder Champ pack.
-- Documentation: product V0, milestone contracts, architecture, ADRs, security.
+- Documentation: product V0, milestone contracts, architecture, ADRs, security,
+  M0 release notes.
 - Project `AGENTS.md`, `opencode.jsonc`, `.gitignore`, `.env.example`,
   `.gitleaks.toml`, LICENSE, ASSETS.md, SECURITY.md.
 
-[Unreleased]: https://github.com/yurioliveira/yo-champs/commits/main
+[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.0.0-m0...main
+[0.0.0-m0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.0.0-m0

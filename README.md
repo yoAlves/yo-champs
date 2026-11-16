@@ -19,6 +19,8 @@ near an original paperclip character named **Champ**.
 ## Quick start
 
 ```sh
+git clone https://github.com/yoAlves/yo-champs.git
+cd yo-champs
 make bootstrap   # tools + package resolve
 make doctor      # environment report
 make verify      # lint, test, build, mascot pack, secrets

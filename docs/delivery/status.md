@@ -1,7 +1,7 @@
 # Status
 
 **Milestone:** M0 — Foundation.
-**State:** local gate green, review passed, clean clone green; remote CI pending.
+**State:** complete — local gate, review, clean clone, CI and deploy green. M1 not started.
 **Date:** 2026-11-16.
 
 ## Gate
@@ -13,9 +13,10 @@
 | `make verify` | pass | SwiftFormat clean; SwiftLint 0 violations; 18 tests pass in 3 suites; app build; default + local packs validated; gitleaks no leaks |
 | `make ci` | pass | same as `make verify` (alias), exit 0 |
 | `make deploy` opens menu bar app | pass | `installed: ~/Applications/YoChamps.app`; PID running; `LSUIElement => true`; ad-hoc signature; menu bar item visibly confirmed by the owner |
-| Git baseline + pre-commit hook | pass | commit `e121360` on `main`; hook ran gitleaks + lint on the commit; `.build/` and `.specs/` ignored |
+| Git baseline + pre-commit hook | pass | commits `e121360`/`946c42b` on `main`; hook ran gitleaks + lint; `.build/` and `.specs/` ignored |
 | Clean clone → bootstrap → verify | pass | local clone 764 KB (no `.build`/`.specs`); `make verify` green; clean tree |
-| CI on remote | pending | workflow added; no git remote configured yet |
+| CI on remote | pass | [run 43857030588](https://github.com/yoAlves/yo-champs/actions/runs/43857030588): `core (linux)` and `app + gates (macos)` green |
+| Public release | pass | prerelease `v0.0.0-m0` with notes in `docs/delivery/releases/M0.md` |
 | Review | pass | full review: 0 critical / 4 important fixed with tests; focused re-review: 0 critical / 0 important, 8 non-blocking suggestions |
 
 ## Environment
@@ -23,7 +24,8 @@
 - macOS 26.5.2 (arm64), Swift 6.3.2, Command Line Tools only (no full Xcode).
 - SwiftLint 0.65.1, SwiftFormat 0.64.7, gitleaks 8.30.1, Homebrew present.
 - `swift-testing` pinned to 6.2.4 (6.3+ links the Xcode-only `_TestingInterop`).
-- Git repo initialized on `main`; commit `e121360`; pre-commit hook installed.
+- Git repo on `main`, public remote `https://github.com/yoAlves/yo-champs`;
+  baseline `e121360`; pre-commit hook installed.
 
 ## Evidence
 

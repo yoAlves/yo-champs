@@ -1,5 +1,43 @@
 # Status
 
+## M2 — Real providers
+
+**State:** implementation complete; local gate green; awaiting final review and PR.
+**Date:** 2026-11-16.
+**Branch:** `feature/m2-providers`.
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0: format 0/54, SwiftLint 0 violations in 52 files, 105 tests / 16 suites, app + validator builds, 1 pack, gitleaks no leaks |
+| `make provider-check` | pass | exit 0; real `OpenAICompatibleProvider` against local Python SSE stub → `provider-check: OK` |
+| Core vendor-free | pass | case-insensitive grep for vendor names over `Sources/YoChampsCore`: zero matches |
+| Typed errors | pass | `LLMError` cases for key/model/timeout/rate/server + Settings display + cancellation |
+| Persistence | pass | `FileConversationStore` restart/clear/schema tests (JSON `history.json`, schemaVersion 1) |
+
+### Evidence
+
+- `make verify` (exit 0):
+  - `0/54 files require formatting, 34 files skipped.`
+  - `Done linting! Found 0 violations, 0 serious in 52 files.`
+  - `✔ Test run with 105 tests in 16 suites passed after 0.111 seconds.`
+  - `Build of product 'YoChampsMac' complete!`, `Build of product 'YoChampsMascotValidator' complete!`
+  - `ok  .../Resources/Mascots/Default`, `validated 1 pack(s)`
+  - `no leaks found` (~311 KB scanned)
+- `make provider-check` (exit 0): stub on 127.0.0.1, ephemeral `URLSession` transport,
+  real SSE parse → `provider-check: OK`.
+- Commits on the branch: `e84c13f` (Core contracts), `7dc17fa` (SSE client),
+  `7c283c9` (config + Keychain), `5ce4680` (JSON persistence), `7ce0eb1` (Settings).
+
+### Gaps and risks
+
+- No full Xcode → Settings UI and streaming visuals have no automated UI test;
+  engine/contract tests and `make demo` cover behavior.
+- ADR 0003 wording and cross-host redirect blocking remain deferred; header
+  placeholders are shown in Settings but not yet expanded at request time.
+- Real endpoint Q&A still requires a personal Keychain key; the gate uses a stub.
+
 ## M1 — Conversation loop
 
 **State:** implementation complete; local gate green; awaiting review and PR.

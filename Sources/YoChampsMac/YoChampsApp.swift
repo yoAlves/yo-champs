@@ -2,6 +2,7 @@ import AppKit
 import OSLog
 import SwiftUI
 import YoChampsCore
+import YoChampsNetwork
 import YoChampsProviders
 
 /// M1 shell: menu bar item, floating ask panel, mock conversation loop.
@@ -106,14 +107,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let isDemo = ProcessInfo.processInfo.arguments.contains("--demo")
         let systemPrompt = "You are Champ, a concise desktop companion. "
             + "Answer in one or two sentences, in the user's language."
-        return CompanionEngine(
-            provider: MockProvider(chunkDelay: isDemo ? .milliseconds(40) : .zero),
-            agent: AgentDefinition(
-                id: "champ",
-                name: "Champ",
-                systemPrompt: systemPrompt,
-                model: "mock-model"
+        let mockAgent = AgentDefinition(
+            id: "champ",
+            name: "Champ",
+            systemPrompt: systemPrompt,
+            model: "mock-model"
+        )
+        if isDemo {
+            return CompanionEngine(
+                provider: MockProvider(chunkDelay: .milliseconds(40)),
+                agent: mockAgent,
+                store: InMemoryConversationStore()
             )
+        }
+        guard let registry = try? ProviderConfigFileStore().loadSync() else {
+            return CompanionEngine(
+                provider: MockProvider(),
+                agent: mockAgent,
+                store: InMemoryConversationStore()
+            )
+        }
+
+        let profile = registry.defaultProfile
+        let configuration = OpenAICompatibleProvider.Configuration(
+            baseURL: profile.baseURL,
+            maxRetries: 2,
+            retryDelay: .milliseconds(250),
+            timeout: .seconds(30)
+        )
+        let transport = KeychainAuthTransport(
+            secrets: KeychainSecretStore(),
+            secretRef: profile.secretRef,
+            base: URLSessionLLMTransport()
+        )
+        let provider = OpenAICompatibleProvider(configuration: configuration, transport: transport)
+        let agent = AgentDefinition(
+            id: profile.id,
+            name: profile.label,
+            systemPrompt: systemPrompt,
+            model: profile.model
+        )
+        return CompanionEngine(
+            provider: provider,
+            agent: agent,
+            store: FileConversationStore(directory: AppPaths.supportDirectory)
         )
     }
 }

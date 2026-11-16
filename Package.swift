@@ -15,16 +15,26 @@ var targets: [Target] = [
 
 #if os(macOS)
     products += [
+        .library(name: "YoChampsNetwork", targets: ["YoChampsNetwork"]),
         .executable(name: "YoChampsMac", targets: ["YoChampsMac"]),
         .executable(name: "YoChampsMascotValidator", targets: ["YoChampsMascotValidator"]),
+        .executable(name: "YoChampsProviderCheck", targets: ["YoChampsProviderCheck"]),
     ]
 
     targets += [
-        .executableTarget(
-            name: "YoChampsMac",
+        .target(
+            name: "YoChampsNetwork",
             dependencies: ["YoChampsCore", "YoChampsProviders"]
         ),
+        .executableTarget(
+            name: "YoChampsMac",
+            dependencies: ["YoChampsCore", "YoChampsProviders", "YoChampsNetwork"]
+        ),
         .executableTarget(name: "YoChampsMascotValidator", dependencies: ["YoChampsCore"]),
+        .executableTarget(
+            name: "YoChampsProviderCheck",
+            dependencies: ["YoChampsCore", "YoChampsProviders", "YoChampsNetwork"]
+        ),
     ]
 #endif
 

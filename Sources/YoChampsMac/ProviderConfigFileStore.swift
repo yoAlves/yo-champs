@@ -9,16 +9,17 @@ public struct ProviderConfigFileStore: Sendable {
 
     public init(directory: URL? = nil) {
         let base: URL
-        if let directory {
-            base = directory
-        } else {
-            let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            base = support.appendingPathComponent("YoChamps", isDirectory: true)
-        }
+        base = directory ?? AppPaths.supportDirectory
         fileURL = base.appendingPathComponent("config.json")
     }
 
     public func load() async throws -> ProviderRegistry? {
+        try loadSync()
+    }
+
+    /// Startup needs the profile before the first panel is shown, so the
+    /// synchronous read stays here rather than in an async app-delegate chain.
+    public func loadSync() throws -> ProviderRegistry? {
         let data: Data
         do {
             data = try Data(contentsOf: fileURL)

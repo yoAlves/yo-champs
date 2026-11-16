@@ -66,6 +66,23 @@ Every milestone ends with a report containing:
 ID, no notarization, no publish, and it prints that notice. It never deletes
 user data; destructive resets are a separate, confirmed target (post-V0).
 
+## Changelog
+
+`CHANGELOG.md` is append-only: new bullets go under `## [Unreleased]`, released
+sections are immutable. `.gitattributes` sets `/CHANGELOG.md merge=union` so two
+branches adding entries merge without a conflict (both sides kept). After
+**every** union merge, check ordering/duplicates, that no bullet was glued into
+a released section, and that no entry was dropped.
+
+Cutting a release is the only rewrite: move entries into a new
+`## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
+`[Unreleased]` compare link to the new tag, leave `[Unreleased]` empty, and do it
+on a branch rebased on `main` with no open or in-flight changelog branches. After
+merging, verify entries are in the right section and the blank line before the
+new heading survived (union can glue adjacent bullets into the released
+section). Web merges may ignore merge drivers; the discipline is the guarantee
+(ADR 0009).
+
 ## Review budget
 
 One full review per non-trivial change set; critical/important findings get one

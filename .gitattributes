@@ -1,0 +1,3 @@
+# Append-only changelog: the union merge driver concatenates both sides'
+# added lines instead of conflicting when two branches touch [Unreleased].
+/CHANGELOG.md merge=union

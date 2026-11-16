@@ -81,6 +81,26 @@ Completion report: what changed, criteria met, commands + output, evidence,
 gaps and risks. The agent does not self-certify; the reviewer checks against
 the milestone contract.
 
+## Changelog
+
+`CHANGELOG.md` is append-only and uses git's built-in **union merge driver**
+(`.gitattributes`: `/CHANGELOG.md merge=union`). Two branches adding entries
+under `## [Unreleased]` merge without a conflict: both sides' added lines are
+kept.
+
+- Add new entries under `## [Unreleased]`; never rewrite released sections.
+- Keep entries as one bullet/line; do not edit or reorder existing lines.
+- After **every** union merge, check ordering/duplicates, that no bullet was
+  glued into a released section, and that no entry was dropped.
+- Cutting a release is the only rewrite: move entries to a new
+  `## [x.y.z] - YYYY-MM-DD` section, add its link reference, update the
+  `[Unreleased]` compare link to the new tag, and leave `## [Unreleased]` empty.
+  Do it on a branch rebased on `main`, with no open or in-flight changelog
+  branches; after merging, verify entries are in the right section (union can
+  glue adjacent bullets into the released section and drop blank lines).
+- GitHub/GitLab web merges may ignore merge drivers; the append-only discipline
+  is the real guarantee.
+
 ## Docs
 
 - `docs/` is public contract: product, delivery, architecture, decisions, security.

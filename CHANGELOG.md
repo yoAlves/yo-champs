@@ -5,6 +5,10 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). V0 stays in `0.x`
 until the public contract stabilizes.
 
+> Append-only: add entries under `[Unreleased]`; released sections are
+> immutable. `.gitattributes` uses git's union merge driver for this file
+> (ADR 0009).
+
 ## [Unreleased]
 
 ## [0.0.0-m0] - 2026-11-16

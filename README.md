@@ -5,8 +5,7 @@ real, provider-agnostic LLM underneath. V0 answers short questions in a chat
 panel with an original paperclip character named **Champ** embedded in the
 header.
 
-**Status:** v0.1.0 (functional V0; tag cut from `main` after the release PR
-merges). M4 hardening is a post-release backlog; see
+**Status:** v0.1.0 (functional V0). M4 hardening is a post-release backlog; see
 `docs/delivery/status.md`.
 
 > Fan-spirited project with an original character. Not affiliated with or

@@ -2,7 +2,7 @@
 
 ## Current state (2026-11-17)
 
-**Version:** 0.1.0 — `v0.1.0` cut from `main` after the release PR merges.
+**Version:** 0.1.0 — tag `v0.1.0` on `main` (merge commit `aec7452`).
 **Milestones:** M0–M3 complete and merged. M4 hardening is an open
 post-release backlog (release ruling in `milestones/M4.md`).
 **App:** functional V0 loop — menu bar, ⌥⌘K, streaming, multi-turn persisted
@@ -15,7 +15,8 @@ recorded demo, public checklist. V0.1 features stay out of this release.
 
 ## v0.1.0 — functional V0 (2026-11-17)
 
-**Branch:** `release/v0.1.0` → PR → `main`. **Tag:** `v0.1.0` (after merge).
+**Branch:** `release/v0.1.0` → PR #15 → `main`. **Tag:** `v0.1.0` (pushed
+2026-11-17, on merge commit `aec7452`).
 **Release notes:** `releases/v0.1.0.md`.
 
 ### What changed
@@ -35,6 +36,7 @@ recorded demo, public checklist. V0.1 features stay out of this release.
 | `make verify` | pass | exit 0: SwiftFormat 0/62 need formatting (44 skipped); SwiftLint 0 violations in 60 files; 50 provider + 5 Mac + 69 core = **124 tests / 19 suites**; app + validator builds; 1 pack; gitleaks ~805 KB, `no leaks found` |
 | `make test-ui` | pass | exit 0; 7 XCUITest cases, 0 failures in 51.592 s; `** TEST SUCCEEDED **` |
 | `make mascot-validate` | pass | `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` (inside `make verify`) |
+| CI (PR #15) | pass | `core (linux)` 1m12s; `app + gates (macos)` 6m48s; run 44170891785 |
 | Review | pass | `@reviewer`: 0 critical / 2 important (fixed) / 6 suggestions; focused re-review `APPROVE_WITH_NOTES`, no critical/important remaining |
 
 ### Ruling

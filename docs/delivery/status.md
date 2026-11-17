@@ -95,9 +95,9 @@ events + `CGWindowListCopyWindowInfo`, app inactive unless noted):
 
 ### Gate after the hotkey fix (2026-11-17, later run)
 
-`make verify` exit 0: SwiftLint 0 violations in 59 files; 50 provider + 69 core =
-119 tests / 18 suites; app + validator builds; 1 pack; gitleaks `no leaks found`
-(~768 KB).
+`make verify` exit 0: SwiftFormat 0/62 files need formatting; SwiftLint 0
+violations in 59 files; 50 provider + 69 core = 119 tests / 18 suites; app +
+validator builds; 1 pack; gitleaks `no leaks found` (~776 KB).
 
 `make test-ui` exit 0: `Executed 5 tests, with 0 failures (0 unexpected) in
 37.943 seconds`, `** TEST SUCCEEDED **`:

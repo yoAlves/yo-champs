@@ -1,10 +1,13 @@
 # Yo Champs
 
 A native macOS menu bar companion with the nostalgia of a desk assistant and a
-real, provider-agnostic LLM underneath. V0 answers short questions in a bubble
-near an original paperclip character named **Champ**.
+real, provider-agnostic LLM underneath. V0 answers short questions in a chat
+panel with an original paperclip character named **Champ** embedded in the
+header.
 
-**Status:** M0 (foundation). No LLM loop yet; see `docs/delivery/status.md`.
+**Status:** v0.1.0 (functional V0; tag cut from `main` after the release PR
+merges). M4 hardening is a post-release backlog; see
+`docs/delivery/status.md`.
 
 > Fan-spirited project with an original character. Not affiliated with or
 > endorsed by Microsoft. No Microsoft assets are included. Code is MIT;
@@ -13,7 +16,8 @@ near an original paperclip character named **Champ**.
 ## Requirements
 
 - macOS 14+ on Apple Silicon
-- Swift 6 toolchain (Command Line Tools are enough for M0)
+- Swift 6 toolchain (Command Line Tools are enough for build, tests and gates)
+- Full Xcode only for `make test-ui`
 - Homebrew for `swiftlint`, `swiftformat`, `gitleaks`
 
 ## Quick start
@@ -36,10 +40,14 @@ agents: build, run, test, gates, deploy and logs all go through it.
 
 ## Architecture
 
-- `YoChampsCore`: pure Foundation domain (engine, contracts, mascot manifests).
-- `YoChampsMac`: thin SwiftUI/AppKit menu bar shell.
-- `YoChampsMascotValidator`: CLI that validates asset packs.
+- `YoChampsCore`: pure Foundation domain (engine, context, storage, mascot manifests).
+- `YoChampsProviders`: OpenAI-compatible streaming client, SSE parser, `MockProvider`.
+- `YoChampsNetwork`: `URLSession` transport for the provider.
+- `YoChampsMac`: menu bar shell, Ask panel/chat, embedded Champ, Settings, Keychain.
+- `YoChampsMascotValidator` / `YoChampsProviderCheck`: local CLIs for packs and the SSE stub.
 - No backend, no daemon, no Rust, no Electron.
+- `scripts/bundle.sh` assembles the app bundle; the small Xcode project is only
+  for `make test-ui`.
 
 Read `docs/architecture/overview.md` and the ADRs in `docs/decisions/`.
 
@@ -50,6 +58,7 @@ Read `docs/architecture/overview.md` and the ADRs in `docs/decisions/`.
 | `docs/product/v0.md` | V0 scope, stories, providers, mascot, definition of done |
 | `docs/delivery/milestones/` | Binding contracts M0–M4 |
 | `docs/delivery/status.md` | Current milestone, gate, evidence |
+| `docs/delivery/releases/` | Release notes (M0, v0.1.0) |
 | `docs/architecture/` | Module graph, contracts, data/versioning, pack format |
 | `docs/decisions/` | Decision log and ADRs |
 | `docs/security/` | Threat model, prompt injection, MCP policy |

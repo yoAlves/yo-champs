@@ -12,22 +12,27 @@ import YoChampsProviders
     static let ask = Self("ask", default: .init(.k, modifiers: [.command, .option]))
 }
 
-/// M2 shell: menu bar item, floating ask panel, real provider conversation,
-/// settings/onboarding and JSON history. The character renderer arrives in M3.
+/// V0 shell: menu bar item, the Ask window (chat + embedded Champ), the real
+/// provider conversation, settings/onboarding and JSON history.
 @main
 struct YoChampsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    /// Read from the bundle so the menu follows `App/Info.plist`.
+    private var version: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+    }
+
     var body: some Scene {
         MenuBarExtra("Yo Champs", systemImage: "paperclip") {
-            Text("Yo Champs 0.0.0")
+            Text("Yo Champs \(version)")
 
             Divider()
 
             Button("Ask…") {
                 appDelegate.showPanel()
             }
-            Button("Show/Hide Champ") {
+            Button("Show/Hide Ask") {
                 appDelegate.toggleAsk()
             }
             Button("Settings…") {

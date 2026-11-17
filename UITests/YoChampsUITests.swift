@@ -2,8 +2,8 @@ import AppKit
 import CoreGraphics
 import XCTest
 
-/// M3 critical flow. The app is launched with `--demo` so no provider, key or
-/// network is involved: only the shell, the panels and the mascot are under test.
+/// V0 critical flow. The app is launched with `--demo` so no provider, key or
+/// network is involved: only the shell, the Ask panel and the mascot are under test.
 final class YoChampsUITests: XCTestCase {
     private enum ID {
         static let askField = "askTextField"
@@ -12,7 +12,7 @@ final class YoChampsUITests: XCTestCase {
         static let mascotWindow = "mascotPanel"
         static let suite = "com.yurioliveira.yochamps"
         static let hotkeyKey = "KeyboardShortcuts_ask"
-        static let showHide = "Show/Hide Champ"
+        static let showHide = "Show/Hide Ask"
         static let demoQuestion = "What can you do?"
         static let demoAnswerSuffix = "streamed one word at a time"
     }
@@ -125,11 +125,11 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(isAppRunning())
 
         clickShowHide()
-        XCTAssertTrue(mascot.waitForNonExistence(timeout: 10), "Show/Hide did not hide Champ")
-        XCTAssertTrue(isAppRunning(), "Hiding Champ must not terminate the process")
+        XCTAssertTrue(mascot.waitForNonExistence(timeout: 10), "Show/Hide did not hide Ask")
+        XCTAssertTrue(isAppRunning(), "Hiding Ask must not terminate the process")
 
         clickShowHide()
-        XCTAssertTrue(mascot.waitForExistence(timeout: 10), "Show/Hide did not show Champ again")
+        XCTAssertTrue(mascot.waitForExistence(timeout: 10), "Show/Hide did not show Ask again")
         XCTAssertTrue(isAppRunning())
     }
 

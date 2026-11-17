@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// Floating ask panel. Borderless-ish chrome keeps it close to the final
-/// bubble; placement and translucency arrive in M3. Champ is embedded in the
-/// hosted `AskView`, not anchored to a separate window.
+/// The single Ask window: one floating `NSPanel` hosts the chat transcript,
+/// the input row and the embedded Champ avatar (ADR 0012). There is no
+/// separate mascot window.
 final class AskPanel: NSPanel {
     var onEscape: (() -> Void)?
     var onBecomeKey: (() -> Void)?

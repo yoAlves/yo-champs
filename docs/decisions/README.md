@@ -33,6 +33,7 @@ the load-bearing ones; the log stays as the index of record.
 | D26 | Changelog is append-only, merged with git's union driver | parallel additive entries merge without conflict or loss | manual conflict per PR, rewriting released sections | 0009 |
 | D27 | GitFlow with protected `main`/`develop` (superseded by D28) | PR + required checks, no direct pushes or admin bypass | direct commits, unprotected main | 0010 |
 | D28 | PR to `main` only; no `develop` | solo/local V0: CI + protected main is the gate; fewer branches and no back-merges | GitFlow develop/release overhead | 0011 |
+| D29 | Champ is embedded in the Ask window; no separate mascot panel, drag or persisted position | one window keeps the chat and the character together; the floating pet duplicated window state | separate draggable mascot panel (M3) | 0012 |
 
 ## ADRs
 
@@ -47,3 +48,4 @@ the load-bearing ones; the log stays as the index of record.
 - [0009 — Append-only changelog with union merge](0009-append-only-changelog.md)
 - [0010 — GitFlow with protected branches](0010-gitflow-protected-branches.md)
 - [0011 — PR to main only (no develop)](0011-pr-to-main.md)
+- [0012 — Champ embedded in the Ask window](0012-embedded-champ-ask.md)

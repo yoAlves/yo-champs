@@ -7,8 +7,8 @@ import YoChampsCore
 ///
 /// The renderer owns every timing decision: one timer per animated state,
 /// none for a single-frame resting state, and none while hidden. It never
-/// touches AppKit windows — the SwiftUI `MascotImageView` hosted in the Ask
-/// panel displays `currentImage`.
+/// touches AppKit windows — the SwiftUI avatar in the Ask header displays
+/// `currentImage`.
 /// Owns the repeating timer so a plain `deinit` can invalidate it. An
 /// `isolated deinit` would require a newer Swift frontend than CI provides.
 private final class TimerOwner {

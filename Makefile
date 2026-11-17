@@ -33,7 +33,7 @@ build: ## Build the debug app bundle
 run: build ## Build and open the debug app
 	@open "$(BUNDLE)"
 
-demo: build ## Open with MockProvider and a fixture question (M1)
+demo: build ## Open with MockProvider and a fixture question
 	@./scripts/stop.sh
 	@open "$(BUNDLE)" --args --demo
 
@@ -91,11 +91,11 @@ clean: ## Remove build artifacts
 provider-check: ## Run the real streaming client against a local SSE stub
 	@./scripts/provider-check.sh
 
-eval: ## Run the eval suite (M4+)
-	@echo "eval: arrives in M4" >&2; exit 2
+eval: ## Run the eval suite (post-0.1.0 backlog)
+	@echo "eval: post-0.1.0 backlog" >&2; exit 2
 
-release-dry-run: ## Build app/DMG without signing (M4+)
-	@echo "release-dry-run: arrives in M4" >&2; exit 2
+release-dry-run: ## Build app/DMG without signing (post-0.1.0 backlog)
+	@echo "release-dry-run: post-0.1.0 backlog" >&2; exit 2
 
 release: ## Signed/notarized release + GitHub Release (post-V0)
 	@echo "release: post-V0; make deploy is the local path for now" >&2; exit 2

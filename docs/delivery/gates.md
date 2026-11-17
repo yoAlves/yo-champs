@@ -10,6 +10,13 @@ critical/important finding. The agent does not self-certify.
 gate is open. If a gate cannot be met, stop and write `BLOCKED.md` with what is
 missing; do not guess or weaken the gate.
 
+**Release ruling (2026-11-17):** `v0.1.0` was cut from the functional V0
+definition of done with M4 hardening still open, by explicit owner decision.
+M0–M3 gates were green and merged; M4 (evals, injection fixtures, performance,
+release dry-run, recorded demo) remains an open post-release backlog. This is a
+scoped exception for the functional V0 release, not a new rule for future
+milestones.
+
 ## `make verify`
 
 The single automated gate. It runs, in order:

@@ -10,7 +10,6 @@
 		1C2A7D30A20C59AC06375FF3 /* AskPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66A3E48DC836A9C7B72FBB65 /* AskPanel.swift */; };
 		29907D57CE39194D093DBE94 /* MascotRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A9B38EE986529B57A53E82 /* MascotRenderer.swift */; };
 		4A66385645F467235C073C3D /* AppWiring.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC9A1BD7E40676D8DDC75A44 /* AppWiring.swift */; };
-		0F1E2D3C4B5A69788796A5B5 /* MascotImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F1E2D3C4B5A69788796A5B4 /* MascotImageView.swift */; };
 		5949AA34E7D70A53BA0D69F4 /* AskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCAEB33BF2D1444633EC8F0 /* AskView.swift */; };
 		63572230902B51DC134490FD /* YoChampsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2214BD8A99D84060357D2BA /* YoChampsUITests.swift */; };
 		6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */; };
@@ -42,7 +41,6 @@
 		156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MascotPackLoader.swift; sourceTree = "<group>"; };
 		19EEAF2BFF18C868581A69B5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderConfigFileStore.swift; sourceTree = "<group>"; };
-		0F1E2D3C4B5A69788796A5B4 /* MascotImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MascotImageView.swift; sourceTree = "<group>"; };
 		48E90F11F251A279C49DE61F /* yo-champs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "yo-champs"; path = .; sourceTree = SOURCE_ROOT; };
 		53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionViewModel.swift; sourceTree = "<group>"; };
 		652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSecretStore.swift; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 				53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */,
 				652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */,
 				156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */,
-				0F1E2D3C4B5A69788796A5B4 /* MascotImageView.swift */,
 				98A9B38EE986529B57A53E82 /* MascotRenderer.swift */,
 				2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */,
 				7334E8100D7E60A42D18D04F /* SettingsPanel.swift */,
@@ -262,7 +259,6 @@
 				CAFEFC78E0EFB3372AE393D3 /* CompanionViewModel.swift in Sources */,
 				B1498AE36BF2FC9DCF11B634 /* KeychainSecretStore.swift in Sources */,
 				6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */,
-				0F1E2D3C4B5A69788796A5B5 /* MascotImageView.swift in Sources */,
 				29907D57CE39194D093DBE94 /* MascotRenderer.swift in Sources */,
 				C3D2718FCECC5BA4A428B84A /* ProviderConfigFileStore.swift in Sources */,
 				DB8B0B3D06ACC6A35D3B6B8F /* SettingsPanel.swift in Sources */,

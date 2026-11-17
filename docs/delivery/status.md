@@ -2,9 +2,9 @@
 
 ## M3 — Character
 
-**State:** complete — local gate green; PR opened, awaiting CI and whole-branch review.
+**State:** complete — local gate, PR CI and whole-branch review green; ready to merge.
 **Date:** 2026-11-17.
-**Branch:** `feature/m3-character` (PR pending; no merge performed by the gate task).
+**Branch:** `feature/m3-character` (PR [#7](https://github.com/yoAlves/yo-champs/pull/7), head `ef83da9`; no merge performed by the gate task).
 
 ### Gate
 
@@ -15,6 +15,9 @@
 | `make test-ui` | pass | exit 0; `** TEST SUCCEEDED **` — 4 XCUITest cases, 0 failures (hotkey → Ask, Esc, show/hide, drag + relaunch) |
 | `make deploy` | pass | exit 0; installed `~/Applications/YoChamps.app` (unsigned local build) |
 | `make restart` | pass | exit 0; `stop` + `open`, installed app reopened |
+| `core (linux)` (CI) | pass | [run 44009994106](https://github.com/yoAlves/yo-champs/actions/runs/44009994106), 1m2s on PR #7 head `ef83da9` |
+| `app + gates (macos)` (CI) | pass | same run, 5m29s on `macos-15-intel` |
+| Whole-branch review | pass | 0 critical / 1 important (fixed); scoped re-review clean, no new breakage |
 
 ### Evidence
 
@@ -37,10 +40,16 @@
 - `make deploy` (exit 0): `stopped YoChamps (if it was running)`, `installed: /Users/yurioliveiraalves/Applications/YoChamps.app`, `note: local build only — unsigned, not notarized, not published`.
 - `make restart` (exit 0): `stopped YoChamps (if it was running)`; the `open` prerequisite relaunches the installed app.
 
+- PR CI (run 44009994106, head `ef83da9`): `core (linux)` pass 1m2s, `app + gates (macos)` pass 5m29s. Both required checks green on the PR head.
+- Whole-branch review over `18ebded..218967e`: 0 critical, 1 important — an unreadable local-pack directory could drop Champ and misreport the cause. Fixed in `11fd196`; scoped re-review `218967e..11fd196` verdict: all findings ADDRESSED, no new Critical/Important breakage.
+- Post-review CI compatibility commits: `9818165` (`redundantSelf` flag difference between local and CI SwiftFormat) and `ef83da9` (`isolated deinit` unsupported by CI's Swift 6.2–6.3). `make verify` remained exit 0 (119 tests) after both; CI went green on `ef83da9`.
+
 ### Gaps and risks
 
-- PR CI (`core (linux)`, `app + gates (macos)`) and whole-branch review are controller-owned and pending. No hash is pinned here: the evidence commit becomes the new branch head, so pinning one would drift (the M2 pattern).
+- No hash is pinned in the gate rows above: pinning the evidence commit would drift as the branch head moves (the M2 pattern).
 - No real-endpoint Q&A in this gate: UI tests launch with `--demo` (MockProvider), so no personal Keychain key is used.
+- The `.unreadable` local-pack fallback path has no automated Mac-side unit test (no Mac unit-test target); covered by the scoped review, not by a test.
+- Deferred non-blocking review minors: PIF warning noise; whitespace-only `confused` test; `max(0,…)` clamp inconsistency; selector dead fallback; two Task 5 message/styling details; same-state frame replay and origin-persist-on-show; duplicate `mascotPanel` identifier; two status wording nits.
 
 ## M2 — Real providers
 

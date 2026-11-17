@@ -1,5 +1,75 @@
 # Status
 
+## Embedded mascot (post-M3) — `feature/embedded-mascot` (open PR, not merged)
+
+**State:** code complete and PR open; the gate has an honest caveat — `make test-ui`
+did **not** pass green in this evidence run (XCUITest flake). No merge performed.
+**Date:** 2026-11-17.
+**Branch:** `feature/embedded-mascot`, rebased onto the PR #8 merge `ca05b28`
+(which carries the SwiftPM resource-bundle fix), +5 commits vs `origin/main`.
+
+### Product decision
+
+Champ is now embedded in the Ask window. The floating mascot panel, its drag and
+position persistence were removed. The menu "Show/Hide Champ" now toggles the Ask
+window. The global hotkey stays ⌘⌥Y (default `carbonModifiers=2304`) and reopens
+Ask.
+
+### Gate (evidence run 2026-11-17, 10:13–10:17 -03)
+
+The chain `make verify && make mascot-validate && make test-ui && make deploy &&
+make restart` was run with per-command exit codes captured and short-circuit
+`&&` semantics. `test-ui` was retried 3 times after its first failure (4 attempts
+total). No test or gate was weakened and no pass was faked.
+
+| Check | Exit | Result | Evidence |
+|---|---|---|---|
+| `make verify` | 0 | pass | SwiftFormat 0/62 need formatting (38 skipped); SwiftLint 0 violations in 59 files; 50 provider + 69 core = **119 tests / 18 suites**; app + validator builds; 1 pack; gitleaks ~587 KB, `no leaks found` |
+| `make mascot-validate` | 0 | pass | `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` |
+| `make test-ui` | 2 (`make`) / 65 (`xcodebuild`) | **FAIL — 0/4 attempts green** | see breakdown below; hotkey, Esc and the new embedded-mascot case passed every attempt; only `testShowHideKeepsProcessAlive` failed |
+| `make deploy` | 0 | pass | `installed: ~/Applications/YoChamps.app` (unsigned local build); app launches with the resource bundle present |
+| `make restart` | 0 | pass | `stop` + `open`; installed app reopened |
+
+### `make test-ui` breakdown (all four attempts)
+
+Each attempt ran four XCUITest cases. `testEmbeddedMascotDoesNotOverlapLongAnswer`,
+`testEscapeClosesAsk` and `testHotkeyOpensAsk` passed in **all 4/4** attempts.
+`testShowHideKeepsProcessAlive` failed in **4/4** attempts with the same error:
+
+```
+UITests/YoChampsUITests.swift:188: error:
+-[YoChampsUITests.YoChampsUITests testShowHideKeepsProcessAlive] :
+Element StatusItem, {{906.0, -27.0}, {33.5, 24.0}}, title: 'Attachements' is not hittable
+```
+
+The status item sits at y = -27 (off-screen in the test runner's display), so
+XCUITest cannot synthesize a click on it. `Executed 4 tests, with 1 failure`,
+`** TEST FAILED **`, xcresult e.g.
+`Test-YoChampsUITests-2026.11.17_10-16-32--0300.xcresult`. This is the known
+intermittent XCUITest hotkey/status-item event-synthesis flake recorded for this
+branch (an earlier, separate run was a clean 4/4 green; in earlier repeats the
+hotkey case failed 3/4 full and 1/3 isolated runs while the status item was
+intermittently off-screen). The new embedded-mascot case and Esc have passed every
+run. The hotkey was verified working in the real deployed app: config
+`carbonModifiers=2304` (⌘⌥Y) and a launch log are present; the user is re-testing.
+
+### Root cause of the reported "hotkey does nothing"
+
+The feature branch predated PR #8 (`ca05b28`), so its local bundle lacked the
+`KeyboardShortcuts_KeyboardShortcuts` resource — the installed app aborted at
+launch. Rebasing `feature/embedded-mascot` onto `ca05b28` fixed it; a fresh
+`make deploy` succeeds and the app launches with `launch demo=false`.
+
+### Gaps and risks
+
+- **Gate is not green:** `make test-ui` never passed in this run (4/4 failures).
+  It is a documented XCUITest flake with a prior clean green run, not a weakened
+  or faked pass. The merge decision belongs to the controller.
+- No real-endpoint Q&A: UI tests use `--demo` (MockProvider); no personal Keychain
+  key was used.
+- The flaky status-item-click and hotkey-event paths have no non-XCUITest
+  automated coverage on this branch.
+
 ## M3 — Character
 
 **State:** complete — local gate, PR CI and whole-branch review green; ready to merge.

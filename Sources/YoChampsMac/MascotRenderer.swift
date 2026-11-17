@@ -135,7 +135,8 @@ final class MascotRenderer {
             height: size.height
         )
         guard let cropped = sheet.cropping(to: rect) else {
-            logger.error("mascot frame \(self.framePosition, privacy: .public) outside sprite sheet")
+            let position = framePosition
+            logger.error("mascot frame \(position, privacy: .public) outside sprite sheet")
             image = nil
             onFrameChange?(nil)
             return

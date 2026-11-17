@@ -40,8 +40,8 @@ demo: build ## Open with MockProvider and a fixture question (M1)
 test: ## Run unit and contract tests
 	@./scripts/test.sh
 
-test-ui: ## Run XCUITest flow (requires full Xcode)
-	@echo "test-ui: XCUITest needs full Xcode and arrives in M1" >&2; exit 2
+test-ui: ## Run XCUITest critical flow (requires full Xcode)
+	@./scripts/test-ui.sh
 
 format: ## Format Swift sources with SwiftFormat
 	@swiftformat "$(ROOT)" --config "$(ROOT)/.swiftformat"

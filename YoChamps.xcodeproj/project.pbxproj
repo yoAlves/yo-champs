@@ -1,0 +1,558 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1C2A7D30A20C59AC06375FF3 /* AskPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66A3E48DC836A9C7B72FBB65 /* AskPanel.swift */; };
+		29907D57CE39194D093DBE94 /* MascotRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A9B38EE986529B57A53E82 /* MascotRenderer.swift */; };
+		4A66385645F467235C073C3D /* AppWiring.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC9A1BD7E40676D8DDC75A44 /* AppWiring.swift */; };
+		4B56D2A2E4BD147208885076 /* MascotPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FBF90EE5ED8DBFE388A56B /* MascotPanelController.swift */; };
+		5949AA34E7D70A53BA0D69F4 /* AskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCAEB33BF2D1444633EC8F0 /* AskView.swift */; };
+		63572230902B51DC134490FD /* YoChampsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2214BD8A99D84060357D2BA /* YoChampsUITests.swift */; };
+		6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */; };
+		6743A86D799682858904C3C0 /* YoChampsProviders in Frameworks */ = {isa = PBXBuildFile; productRef = BC616AC8F3BFF204C5808750 /* YoChampsProviders */; };
+		72E5B8160F0648A40AA4664D /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 9756B223E2195E20886B4855 /* KeyboardShortcuts */; };
+		91DD4DF140DB37FB75D5219B /* Mascots in Resources */ = {isa = PBXBuildFile; fileRef = 76365F040B8EF6C06266C3D8 /* Mascots */; };
+		B1498AE36BF2FC9DCF11B634 /* KeychainSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */; };
+		B9563CF6836F268417418326 /* YoChampsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DB3BFA955763BC4F0ABF56 /* YoChampsApp.swift */; };
+		BA9B63B81C5642399AA180D9 /* YoChampsNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = 615D4A568E19950BD4538704 /* YoChampsNetwork */; };
+		C3D2718FCECC5BA4A428B84A /* ProviderConfigFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */; };
+		CAFEFC78E0EFB3372AE393D3 /* CompanionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */; };
+		DB8B0B3D06ACC6A35D3B6B8F /* SettingsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7334E8100D7E60A42D18D04F /* SettingsPanel.swift */; };
+		E816787182B0E7DD06760F3B /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D36CB7DCB04364EAB0D3F9F4 /* SettingsViewModel.swift */; };
+		ED08DE9D64C1AB13381E87C9 /* YoChampsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 95B629571A54E48ECF0FD0BC /* YoChampsCore */; };
+		FF8006036A56C9630A2E34F4 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19EEAF2BFF18C868581A69B5 /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1F53E7B88CD3D0C7F21C8D14 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 30EC5E7B1AB3A2304AC9E7FF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3005F00D8F461D94CAB35185;
+			remoteInfo = YoChamps;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MascotPackLoader.swift; sourceTree = "<group>"; };
+		19EEAF2BFF18C868581A69B5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderConfigFileStore.swift; sourceTree = "<group>"; };
+		42FBF90EE5ED8DBFE388A56B /* MascotPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MascotPanelController.swift; sourceTree = "<group>"; };
+		48E90F11F251A279C49DE61F /* yo-champs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "yo-champs"; path = .; sourceTree = SOURCE_ROOT; };
+		53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionViewModel.swift; sourceTree = "<group>"; };
+		652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSecretStore.swift; sourceTree = "<group>"; };
+		66A3E48DC836A9C7B72FBB65 /* AskPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskPanel.swift; sourceTree = "<group>"; };
+		7334E8100D7E60A42D18D04F /* SettingsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanel.swift; sourceTree = "<group>"; };
+		76365F040B8EF6C06266C3D8 /* Mascots */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Mascots; path = Resources/Mascots; sourceTree = SOURCE_ROOT; };
+		8D46016F2790F1D570741763 /* YoChampsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YoChampsUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		98A9B38EE986529B57A53E82 /* MascotRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MascotRenderer.swift; sourceTree = "<group>"; };
+		B6DB3BFA955763BC4F0ABF56 /* YoChampsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoChampsApp.swift; sourceTree = "<group>"; };
+		CCCAEB33BF2D1444633EC8F0 /* AskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskView.swift; sourceTree = "<group>"; };
+		D36CB7DCB04364EAB0D3F9F4 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		DC6C6CE58CF0F0BC67168BE7 /* YoChamps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YoChamps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2214BD8A99D84060357D2BA /* YoChampsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoChampsUITests.swift; sourceTree = "<group>"; };
+		FC9A1BD7E40676D8DDC75A44 /* AppWiring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWiring.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EED3DEB43533F1989520A93B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ED08DE9D64C1AB13381E87C9 /* YoChampsCore in Frameworks */,
+				6743A86D799682858904C3C0 /* YoChampsProviders in Frameworks */,
+				BA9B63B81C5642399AA180D9 /* YoChampsNetwork in Frameworks */,
+				72E5B8160F0648A40AA4664D /* KeyboardShortcuts in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4FA39F870167060EDF24790A /* YoChampsMac */ = {
+			isa = PBXGroup;
+			children = (
+				FC9A1BD7E40676D8DDC75A44 /* AppWiring.swift */,
+				66A3E48DC836A9C7B72FBB65 /* AskPanel.swift */,
+				CCCAEB33BF2D1444633EC8F0 /* AskView.swift */,
+				53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */,
+				652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */,
+				156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */,
+				42FBF90EE5ED8DBFE388A56B /* MascotPanelController.swift */,
+				98A9B38EE986529B57A53E82 /* MascotRenderer.swift */,
+				2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */,
+				7334E8100D7E60A42D18D04F /* SettingsPanel.swift */,
+				19EEAF2BFF18C868581A69B5 /* SettingsView.swift */,
+				D36CB7DCB04364EAB0D3F9F4 /* SettingsViewModel.swift */,
+				B6DB3BFA955763BC4F0ABF56 /* YoChampsApp.swift */,
+			);
+			path = YoChampsMac;
+			sourceTree = "<group>";
+		};
+		62E2F1EFABF816FCD456F0A2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				48E90F11F251A279C49DE61F /* yo-champs */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		7837CA6E07B229FC79A21FCE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				76365F040B8EF6C06266C3D8 /* Mascots */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B6C7F6C89FAD1E67F4D72664 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				4FA39F870167060EDF24790A /* YoChampsMac */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		E7D183CB9EA9615C47FDDE0D /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				E2214BD8A99D84060357D2BA /* YoChampsUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		EEBBEEF7B26EB12DBB1F643B = {
+			isa = PBXGroup;
+			children = (
+				62E2F1EFABF816FCD456F0A2 /* Packages */,
+				7837CA6E07B229FC79A21FCE /* Resources */,
+				B6C7F6C89FAD1E67F4D72664 /* Sources */,
+				E7D183CB9EA9615C47FDDE0D /* UITests */,
+				FC9505ECE2263D908EE79977 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FC9505ECE2263D908EE79977 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DC6C6CE58CF0F0BC67168BE7 /* YoChamps.app */,
+				8D46016F2790F1D570741763 /* YoChampsUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0276C2C2E28C7663646B12DB /* YoChampsUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 587F4F3429B316D2DC7723FC /* Build configuration list for PBXNativeTarget "YoChampsUITests" */;
+			buildPhases = (
+				AA5C12A32CA7C4F244B7046B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C9F3C03F8DF128BB594F7A93 /* PBXTargetDependency */,
+			);
+			name = YoChampsUITests;
+			packageProductDependencies = (
+			);
+			productName = YoChampsUITests;
+			productReference = 8D46016F2790F1D570741763 /* YoChampsUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		3005F00D8F461D94CAB35185 /* YoChamps */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 68674B2844B61661221CAF4D /* Build configuration list for PBXNativeTarget "YoChamps" */;
+			buildPhases = (
+				D100C03AB77020147CE18C32 /* Sources */,
+				38745250ECB6EA5C5E8AE0AE /* Resources */,
+				EED3DEB43533F1989520A93B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YoChamps;
+			packageProductDependencies = (
+				95B629571A54E48ECF0FD0BC /* YoChampsCore */,
+				BC616AC8F3BFF204C5808750 /* YoChampsProviders */,
+				615D4A568E19950BD4538704 /* YoChampsNetwork */,
+				9756B223E2195E20886B4855 /* KeyboardShortcuts */,
+			);
+			productName = YoChamps;
+			productReference = DC6C6CE58CF0F0BC67168BE7 /* YoChamps.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		30EC5E7B1AB3A2304AC9E7FF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					0276C2C2E28C7663646B12DB = {
+						ProvisioningStyle = Manual;
+						TestTargetID = 3005F00D8F461D94CAB35185;
+					};
+					3005F00D8F461D94CAB35185 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 2B3AB57371CDE939C0D24DAC /* Build configuration list for PBXProject "YoChamps" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = EEBBEEF7B26EB12DBB1F643B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				64D15D9936B519343ABEB2AA /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				1C75E63F8E2BE61112F69908 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FC9505ECE2263D908EE79977 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3005F00D8F461D94CAB35185 /* YoChamps */,
+				0276C2C2E28C7663646B12DB /* YoChampsUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		38745250ECB6EA5C5E8AE0AE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				91DD4DF140DB37FB75D5219B /* Mascots in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA5C12A32CA7C4F244B7046B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				63572230902B51DC134490FD /* YoChampsUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D100C03AB77020147CE18C32 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A66385645F467235C073C3D /* AppWiring.swift in Sources */,
+				1C2A7D30A20C59AC06375FF3 /* AskPanel.swift in Sources */,
+				5949AA34E7D70A53BA0D69F4 /* AskView.swift in Sources */,
+				CAFEFC78E0EFB3372AE393D3 /* CompanionViewModel.swift in Sources */,
+				B1498AE36BF2FC9DCF11B634 /* KeychainSecretStore.swift in Sources */,
+				6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */,
+				4B56D2A2E4BD147208885076 /* MascotPanelController.swift in Sources */,
+				29907D57CE39194D093DBE94 /* MascotRenderer.swift in Sources */,
+				C3D2718FCECC5BA4A428B84A /* ProviderConfigFileStore.swift in Sources */,
+				DB8B0B3D06ACC6A35D3B6B8F /* SettingsPanel.swift in Sources */,
+				FF8006036A56C9630A2E34F4 /* SettingsView.swift in Sources */,
+				E816787182B0E7DD06760F3B /* SettingsViewModel.swift in Sources */,
+				B9563CF6836F268417418326 /* YoChampsApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C9F3C03F8DF128BB594F7A93 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3005F00D8F461D94CAB35185 /* YoChamps */;
+			targetProxy = 1F53E7B88CD3D0C7F21C8D14 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		4555EC920462CB29F4137198 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yurioliveira.yochamps;
+				PRODUCT_NAME = YoChamps;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		48D46180854E00DC65721A34 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A5E3F81B2A4FBE4F8654B52B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AA67708A5E4D4F54A931D81A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yurioliveira.yochamps.UITests;
+				PRODUCT_NAME = YoChampsUITests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = YoChamps;
+			};
+			name = Release;
+		};
+		D09E1D545759D20D0D9D6705 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yurioliveira.yochamps.UITests;
+				PRODUCT_NAME = YoChampsUITests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = YoChamps;
+			};
+			name = Debug;
+		};
+		D12E37D45D09EF3082DE75EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yurioliveira.yochamps;
+				PRODUCT_NAME = YoChamps;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B3AB57371CDE939C0D24DAC /* Build configuration list for PBXProject "YoChamps" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A5E3F81B2A4FBE4F8654B52B /* Debug */,
+				48D46180854E00DC65721A34 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		587F4F3429B316D2DC7723FC /* Build configuration list for PBXNativeTarget "YoChampsUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D09E1D545759D20D0D9D6705 /* Debug */,
+				AA67708A5E4D4F54A931D81A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		68674B2844B61661221CAF4D /* Build configuration list for PBXNativeTarget "YoChamps" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4555EC920462CB29F4137198 /* Debug */,
+				D12E37D45D09EF3082DE75EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		1C75E63F8E2BE61112F69908 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		64D15D9936B519343ABEB2AA /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts.git";
+			requirement = {
+				kind = exactVersion;
+				version = 1.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		615D4A568E19950BD4538704 /* YoChampsNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = YoChampsNetwork;
+		};
+		95B629571A54E48ECF0FD0BC /* YoChampsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = YoChampsCore;
+		};
+		9756B223E2195E20886B4855 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64D15D9936B519343ABEB2AA /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+		BC616AC8F3BFF204C5808750 /* YoChampsProviders */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = YoChampsProviders;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 30EC5E7B1AB3A2304AC9E7FF /* Project object */;
+}

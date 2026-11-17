@@ -34,12 +34,16 @@ final class PanelCloseHandler: NSObject, NSWindowDelegate {
 
 @MainActor
 final class AskPanelController {
+    private static let gap: CGFloat = 12
+
     private let panel: AskPanel
     private let model: CompanionViewModel
     private let closeHandler: PanelCloseHandler
+    private let anchorProvider: () -> NSRect?
 
-    init(model: CompanionViewModel) {
+    init(model: CompanionViewModel, anchorProvider: @escaping () -> NSRect?) {
         self.model = model
+        self.anchorProvider = anchorProvider
         closeHandler = PanelCloseHandler { model.stop() }
 
         panel = AskPanel(
@@ -70,7 +74,27 @@ final class AskPanelController {
 
     func show() {
         NSApplication.shared.activate()
+        positionNearMascot()
         panel.makeKeyAndOrderFront(nil)
+    }
+
+    /// Open beside Champ's trailing edge, vertically centred on the screen the
+    /// mascot occupies. A nil anchor keeps the bubble in its centred position.
+    private func positionNearMascot() {
+        guard let anchor = anchorProvider() else {
+            panel.center()
+            return
+        }
+        let screen = NSScreen.screens.first { $0.frame.intersects(anchor) } ?? NSScreen.main
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1024, height: 768)
+        let size = panel.frame.size
+        let maxX = visible.maxX - min(size.width, visible.width)
+        let maxY = visible.maxY - min(size.height, visible.height)
+        let origin = NSPoint(
+            x: min(max(anchor.maxX + Self.gap, visible.minX), maxX),
+            y: min(max(anchor.midY - size.height / 2, visible.minY), maxY)
+        )
+        panel.setFrameOrigin(origin)
     }
 
     /// `make demo`: open the panel with a fixture question, streamed slowly

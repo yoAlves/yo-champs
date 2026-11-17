@@ -1,3 +1,4 @@
+import KeyboardShortcuts
 import SwiftUI
 
 struct SettingsView: View {
@@ -23,6 +24,11 @@ struct SettingsView: View {
             }
 
             Form {
+                HStack {
+                    Text("Show Champ hotkey")
+                    Spacer()
+                    KeyboardShortcuts.Recorder(for: .ask)
+                }
                 TextField("Base URL (https://…/v1)", text: $model.baseURL)
                 TextField("Model", text: $model.model)
                 SecureField("API key (stored in Keychain)", text: $model.apiKey)

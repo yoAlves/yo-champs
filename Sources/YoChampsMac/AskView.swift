@@ -27,11 +27,13 @@ struct AskView: View {
                     .focused($isFocused)
                     .onSubmit { model.ask() }
                     .disabled(model.isBusy)
+                    .accessibilityIdentifier("askTextField")
                 Button("Ask") {
                     model.ask()
                 }
                 .keyboardShortcut(.defaultAction)
                 .disabled(!model.canAsk)
+                .accessibilityIdentifier("askSendButton")
             }
 
             Divider()

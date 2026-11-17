@@ -11,14 +11,16 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
 
     private let renderer: MascotRenderer
     private let defaults: UserDefaults?
+    private let onHide: () -> Void
 
     // Exposed so the later hotkey/accessibility task can configure the window
     // and image view without rebuilding them.
     let panel: NSPanel
     let imageView: NSImageView
 
-    init(renderer: MascotRenderer) {
+    init(renderer: MascotRenderer, onHide: @escaping () -> Void = {}) {
         self.renderer = renderer
+        self.onHide = onHide
         defaults = UserDefaults(suiteName: Self.suiteName)
 
         let size = renderer.currentImage?.size ?? renderer.frameDisplaySize
@@ -27,6 +29,7 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
         imageView.imageScaling = .scaleNone
         imageView.imageAlignment = .alignCenter
         imageView.isEditable = false
+        imageView.setAccessibilityIdentifier("mascotPanel")
         self.imageView = imageView
 
         let panel = NSPanel(
@@ -44,6 +47,7 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
         panel.isReleasedWhenClosed = false
         panel.isExcludedFromWindowsMenu = true
         panel.ignoresMouseEvents = true // hidden until show()
+        panel.setAccessibilityIdentifier("mascotPanel")
         panel.contentView = imageView
         self.panel = panel
 
@@ -68,6 +72,7 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
         renderer.setHidden(true)
         panel.ignoresMouseEvents = true
         panel.orderOut(nil)
+        onHide()
     }
 
     func toggle() {
@@ -91,6 +96,12 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
             panel.setFrameOrigin(clamped)
         }
         Self.saveOrigin(panel.frame.origin, in: defaults)
+    }
+
+    /// ⌘W (and any other close path) hides Champ without ending the process.
+    /// `hide()` stops the in-flight turn, so nothing streams while invisible.
+    func windowWillClose(_ notification: Notification) {
+        hide()
     }
 
     /// Keep the panel's top-left inside the bounding box of all visible screen

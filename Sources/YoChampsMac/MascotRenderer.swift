@@ -19,7 +19,7 @@ private final class TimerOwner {
 }
 
 @MainActor
-final class MascotRenderer {
+final class MascotRenderer: ObservableObject {
     private let sequence: MascotFrameSequence
     private let sheet: CGImage?
     private let scale: CGFloat
@@ -30,7 +30,7 @@ final class MascotRenderer {
     private var frameIndices: [Int] = []
     private var framePosition = 0
     private let timerOwner = TimerOwner()
-    private var image: NSImage?
+    @Published private(set) var image: NSImage?
 
     /// Frame size in points after applying the manifest scale.
     var frameDisplaySize: NSSize {
@@ -40,10 +40,6 @@ final class MascotRenderer {
             height: CGFloat(size.height) * scale
         )
     }
-
-    /// Invoked on the main actor whenever the displayed frame changes. The
-    /// panel controller uses it to push new frames into its image view.
-    var onFrameChange: ((NSImage?) -> Void)?
 
     var currentImage: NSImage? {
         image
@@ -130,7 +126,6 @@ final class MascotRenderer {
     private func updateImage() {
         guard let sheet, frameIndices.indices.contains(framePosition) else {
             image = nil
-            onFrameChange?(nil)
             return
         }
         let size = sequence.frameSize
@@ -144,11 +139,9 @@ final class MascotRenderer {
             let position = framePosition
             logger.error("mascot frame \(position, privacy: .public) outside sprite sheet")
             image = nil
-            onFrameChange?(nil)
             return
         }
         image = NSImage(cgImage: cropped, size: frameDisplaySize)
-        onFrameChange?(image)
     }
 
     private static func loadSheet(from url: URL) -> CGImage? {

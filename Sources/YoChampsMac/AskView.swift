@@ -50,12 +50,28 @@ struct AskView: View {
 
             Spacer()
 
+            HStack(spacing: 6) {
+                Button {
+                    model.newChat()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderless)
+                .frame(width: 24, height: 24)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
+                .help("New Chat")
+                .keyboardShortcut("n", modifiers: .command)
+                .disabled(model.isBusy)
+                .accessibilityIdentifier("newChatButton")
+            }
+
             if let image = renderer.currentImage {
                 Image(nsImage: image)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 28, height: 28)
-                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 7))
+                    .frame(width: 56, height: 56)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
                     .accessibilityIdentifier("mascotPanel")
                     .padding(.trailing, 4)
             }
@@ -77,14 +93,14 @@ struct AskView: View {
                         // belong to the whole block, or long answers stream
                         // below the fold while the question line is pinned.
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("USR: \(turn.question)")
+                            Text(turn.question)
                                 .font(.callout)
                                 .fontWeight(.semibold)
                                 .textSelection(.enabled)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Text(turn.answer.isEmpty ? "RESPONSE: …" : "RESPONSE: \(turn.answer)")
+                            Text("• \(turn.answer)")
                                 .font(.callout)
                                 .textSelection(.enabled)
                                 .fixedSize(horizontal: false, vertical: true)

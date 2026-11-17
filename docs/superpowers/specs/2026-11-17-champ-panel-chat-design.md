@@ -60,10 +60,12 @@ resizing.
   answer with the error shown by the existing `errorMessage` row.
 - The existing `answer` property is deleted once `AskView` stops using it
   (same change that rewrites the view).
-- Transcript lines render as the sketch shows: `USR: <question>` and
-  `RESPONSE: <answer>`; an empty answer renders as `…`.
-- `MascotImageView` gains an optional fixed `avatarSize`; when set it scales
-  proportionally instead of using `frameDisplaySize`.
+- Transcript lines render conversation-style: the user's question has no
+  prefix; the response is preceded by a bullet (`• …`).
+- O avatar do header usa SwiftUI `Image(nsImage:).resizable().scaledToFit()`
+  com frame fixo de 56pt; a abordagem com `avatarSize` em `MascotImageView`
+  foi revertida porque o `intrinsicContentSize` do `NSImageView` ignorava o
+  frame proposto pelo SwiftUI.
 - Unit tests for the view model live in a new `YoChampsMacTests` target
   (macOS-only), driving a real `CompanionEngine` with a scripted fake
   `LLMProvider`.

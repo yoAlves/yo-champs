@@ -56,6 +56,13 @@ final class AskPanelController {
     private let closeHandler: PanelCloseHandler
     private let renderer: MascotRenderer
     private let panelState = PanelState()
+    /// Var (not `let`): the init captures `self` in closures before the
+    /// observer is registered at the end, and Swift definite initialization
+    /// forbids capturing `self` before every stored property is initialized.
+    /// Optionals are nil by default, which satisfies that rule.
+    /// Lives for the controller's lifetime (the AppDelegate retains the
+    /// controller for the app's lifetime).
+    private var activationObserver: (any NSObjectProtocol)?
 
     init(model: CompanionViewModel, renderer: MascotRenderer) {
         self.model = model
@@ -101,10 +108,27 @@ final class AskPanelController {
             self?.panelState.showToken += 1
         }
         panel.center()
+
+        // Activation refused at summon time (accessory app, macOS focus-steal
+        // prevention) can complete a beat later; the key request made in
+        // `show()` does not survive that gap. Re-order the visible panel once
+        // the app actually becomes active so it can become key.
+        activationObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.raisePanelIfVisible()
+            }
+        }
     }
 
     func show() {
-        NSApplication.shared.activate()
+        // The plain activate() is refused for an inactive accessory app under
+        // macOS focus-steal prevention; this variant is the supported path
+        // for menu-bar apps summoned by hotkey (deprecated but functional).
+        NSApplication.shared.activate(ignoringOtherApps: true)
         panel.center()
         renderer.setHidden(false)
         panel.makeKeyAndOrderFront(nil)
@@ -130,5 +154,10 @@ final class AskPanelController {
         model.stop()
         renderer.setHidden(true)
         panel.orderOut(nil)
+    }
+
+    private func raisePanelIfVisible() {
+        guard panel.isVisible, !panel.isKeyWindow else { return }
+        panel.makeKeyAndOrderFront(nil)
     }
 }

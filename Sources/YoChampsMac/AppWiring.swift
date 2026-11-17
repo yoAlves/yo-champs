@@ -65,10 +65,15 @@ public struct KeychainAuthTransport: LLMHTTPTransport {
         return try await base.send(authenticated)
     }
 
+    private static var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "dev"
+    }
+
     private static func expand(_ value: String, conversationID: String) -> String {
-        value
+        let version = appVersion
+        return value
             .replacingOccurrences(of: "{{conversationId}}", with: conversationID)
-            .replacingOccurrences(of: "{{appVersion}}", with: "0.0.0")
-            .replacingOccurrences(of: "{{userAgent}}", with: "YoChamps/0.0.0")
+            .replacingOccurrences(of: "{{appVersion}}", with: version)
+            .replacingOccurrences(of: "{{userAgent}}", with: "YoChamps/\(version)")
     }
 }

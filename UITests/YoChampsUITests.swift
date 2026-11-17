@@ -164,10 +164,11 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(mascot.waitForExistence(timeout: 10))
 
         // `--demo` pre-asks the fixture question through showDemo(); wait for
-        // that stream to settle so the field is enabled before typing again.
+        // that stream to settle before typing again.
         XCTAssertNotNil(waitForAnswer(timeout: 15), "demo answer did not appear")
         // "Cancel" is present only while a turn is busy; wait for it to go so
-        // the field and send button are enabled for the next question.
+        // the previous turn has settled and the send button accepts the next
+        // question (the field itself is always enabled).
         XCTAssertTrue(app.buttons["Cancel"].waitForNonExistence(timeout: 10), "demo stream did not settle")
 
         let field = app.textFields[ID.askField]

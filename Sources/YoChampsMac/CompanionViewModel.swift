@@ -11,6 +11,10 @@ final class CompanionViewModel: ObservableObject {
         let id = UUID()
         let question: String
         var answer: String
+        /// True from `ask()` until the engine settles the turn; lets the view
+        /// show the waiting indicator immediately, before the async
+        /// `.thinking` event arrives.
+        var isPending: Bool
     }
 
     @Published var question = ""
@@ -41,17 +45,6 @@ final class CompanionViewModel: ObservableObject {
         !isBusy && !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var statusLabel: String {
-        switch state {
-        case .thinking:
-            "Thinking…"
-        case .streaming:
-            "Streaming…"
-        case .idle, .happy, .confused, .error:
-            ""
-        }
-    }
-
     func ask() {
         ask(question)
     }
@@ -64,7 +57,7 @@ final class CompanionViewModel: ObservableObject {
 
         turn?.cancel()
         question = ""
-        turns.append(ChatTurn(question: trimmed, answer: ""))
+        turns.append(ChatTurn(question: trimmed, answer: "", isPending: true))
         errorMessage = nil
         turn = Task { [weak self] in
             guard let self else {
@@ -110,6 +103,9 @@ final class CompanionViewModel: ObservableObject {
         if isBusy {
             state = .idle
         }
+        // The consumer task is cancelled, so no `.cancelled` event reaches
+        // `handle`; the abandoned turn must not keep the indicator.
+        settleLastTurn()
     }
 
     private func handle(_ event: CompanionEvent) {
@@ -121,9 +117,18 @@ final class CompanionViewModel: ObservableObject {
                 turns[turns.count - 1].answer += delta
             }
         case .completed, .cancelled:
-            break
+            settleLastTurn()
         case let .failed(message):
+            settleLastTurn()
             errorMessage = message
+        }
+    }
+
+    /// A settled turn no longer shows the waiting indicator, even if it
+    /// streamed no text (abandoned, empty or failed answer).
+    private func settleLastTurn() {
+        if !turns.isEmpty {
+            turns[turns.count - 1].isPending = false
         }
     }
 }

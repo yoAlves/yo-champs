@@ -25,6 +25,7 @@ until the public contract stabilizes.
 ### Changed
 
 - Default Ask hotkey is now ⌥⌘K; it stays customizable in Settings.
+- Ask panel: input pinned to the bottom edge, icon cancel button while streaming, pulsing waiting indicator instead of a status caption.
 
 ### Fixed
 

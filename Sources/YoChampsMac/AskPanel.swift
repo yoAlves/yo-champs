@@ -59,6 +59,9 @@ final class AskPanelController {
         panel.isMovableByWindowBackground = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        // NSPanel defaults to true; a summoned panel must stay on screen while
+        // the app is inactive (activation lands a beat after the hotkey).
+        panel.hidesOnDeactivate = false
 
         // Kept alive by the controller: NSWindow.delegate is weak.
         panel.delegate = closeHandler

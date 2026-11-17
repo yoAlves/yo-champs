@@ -1,19 +1,20 @@
 # Status
 
-## Embedded mascot (post-M3) — `feature/embedded-mascot` (open PR, not merged)
+## Embedded mascot (post-M3) — `feature/embedded-mascot` (PR #9)
 
-**State:** code complete and PR open; the gate has an honest caveat — `make test-ui`
-did **not** pass green in this evidence run (XCUITest flake). No merge performed.
+**State:** code complete. The latest gate run is green: `make verify`,
+`make test-ui` (5/5 after stopping the installed instance) and `make deploy`.
+An earlier `test-ui` evidence run flaked on the status-item click; see below.
 **Date:** 2026-11-17.
 **Branch:** `feature/embedded-mascot`, rebased onto the PR #8 merge `ca05b28`
-(which carries the SwiftPM resource-bundle fix), +5 commits vs `origin/main`.
+(which carries the SwiftPM resource-bundle fix), +6 commits vs `origin/main`.
 
 ### Product decision
 
 Champ is now embedded in the Ask window. The floating mascot panel, its drag and
 position persistence were removed. The menu "Show/Hide Champ" now toggles the Ask
-window. The global hotkey stays ⌘⌥Y (default `carbonModifiers=2304`) and reopens
-Ask.
+window. The global hotkey default is ⌘⌥K (the `KeyboardShortcuts` default),
+customizable in Settings, and reopens Ask.
 
 ### Gate (evidence run 2026-11-17, 10:13–10:17 -03)
 
@@ -50,8 +51,8 @@ intermittent XCUITest hotkey/status-item event-synthesis flake recorded for this
 branch (an earlier, separate run was a clean 4/4 green; in earlier repeats the
 hotkey case failed 3/4 full and 1/3 isolated runs while the status item was
 intermittently off-screen). The new embedded-mascot case and Esc have passed every
-run. The hotkey was verified working in the real deployed app: config
-`carbonModifiers=2304` (⌘⌥Y) and a launch log are present; the user is re-testing.
+run. The hotkey was verified working in the real deployed app; see "Hotkey
+visibility fix and default ⌥⌘K" below for the later root cause and evidence.
 
 ### Root cause of the reported "hotkey does nothing"
 
@@ -60,15 +61,77 @@ The feature branch predated PR #8 (`ca05b28`), so its local bundle lacked the
 launch. Rebasing `feature/embedded-mascot` onto `ca05b28` fixed it; a fresh
 `make deploy` succeeds and the app launches with `launch demo=false`.
 
+### Hotkey visibility fix and default ⌥⌘K (2026-11-17, same PR)
+
+The bundle fix above was necessary but not sufficient: the hotkey fired while the
+Ask panel stayed invisible. Root cause: `AskPanel` is an `NSPanel`, whose
+`hidesOnDeactivate` defaults to `true`, so the window was removed from the screen
+whenever the app was inactive. `NSApp.activate()` is a cooperative request on
+macOS 14+ and lands about 0.5 s after the hotkey, so the panel stayed invisible
+until activation. The panel now sets `hidesOnDeactivate = false`: the floating
+window is ordered on screen immediately, and activation only makes it key. This
+also keeps the panel visible when the user switches apps while it is open.
+
+⌥⌘Y was retested with the fixed bundle and fires; the original report did not
+reproduce as a key conflict. The product default is now **⌥⌘K** (requested by the
+owner) and remains customizable in Settings; a machine-local `defaults` override
+used during debugging was removed so the new default applies. ⌥⌘K was checked
+with a Carbon registration probe (`RegisterEventHotKey` returned 0) and no
+enabled system symbolic hotkey uses it; `testHotkeyOpensAsk` exercises it too.
+
+End-to-end evidence on the installed release build (automation: System Events key
+events + `CGWindowListCopyWindowInfo`, app inactive unless noted):
+
+| Check | Result |
+|---|---|
+| Launch with another app frontmost | Ask window `onscreen=true`, app inactive |
+| Switch to another app | Ask window stays `onscreen=true` |
+| ⌥⌘K from another app | app active, Ask `onscreen=true` |
+| Esc | Ask hidden, process alive |
+| ⌥⌘K again | Ask `onscreen=true` |
+| Terminal in fullscreen, ⌥⌘K | Ask appears above the fullscreen app, app active |
+| Manual ask with a personal key | HTTP 200 reply; the Keychain prompt is local ad-hoc-build behavior, not an app bug |
+| Typing after ⌥⌘K, no click | text landed in the Ask field (AX value of the SwiftUI text field) |
+
+### Gate after the hotkey fix (2026-11-17, later run)
+
+`make verify` exit 0: SwiftLint 0 violations in 59 files; 50 provider + 69 core =
+119 tests / 18 suites; app + validator builds; 1 pack; gitleaks `no leaks found`
+(~768 KB).
+
+`make test-ui` exit 0: `Executed 5 tests, with 0 failures (0 unexpected) in
+37.943 seconds`, `** TEST SUCCEEDED **`:
+`testAskStaysOnScreenWhenAnotherAppIsActive` 5.9 s (new regression guard for
+`hidesOnDeactivate`), `testEmbeddedMascotDoesNotOverlapLongAnswer` 8.1 s,
+`testEscapeClosesAsk` 4.3 s, `testHotkeyOpensAsk` 6.7 s (now ⌥⌘K),
+`testShowHideKeepsProcessAlive` 13.0 s.
+
+Mutation check: setting `hidesOnDeactivate` back to `true` makes the new test
+fail with `Ask left the screen when another app became active`; with the fix
+restored it passes. The test is not vacuous.
+
+`make deploy` exit 0: `installed: ~/Applications/YoChamps.app` (release, ad-hoc
+signature); the deploy check confirmed the process stayed alive, and `make open`
+relaunched the same installed build after the UI gate.
+
+Attempts in this session surfaced three different suite flakes: the documented
+status-item click, one `testEmbeddedMascot…` snapshot error, and a menu-open
+timeout in `testShowHideKeepsProcessAlive`. One `testEmbeddedMascot…` failure
+("element disabled") was a real ordering issue: a case now leaves Finder active,
+so `launchApp()` had to wait for the app to become frontmost before querying AX.
+After that fix the suite passed 5/5 in two consecutive runs. The clean run also
+requires no installed instance with the same bundle id (`make stop` first).
+
 ### Gaps and risks
 
-- **Gate is not green:** `make test-ui` never passed in this run (4/4 failures).
-  It is a documented XCUITest flake with a prior clean green run, not a weakened
-  or faked pass. The merge decision belongs to the controller.
-- No real-endpoint Q&A: UI tests use `--demo` (MockProvider); no personal Keychain
-  key was used.
-- The flaky status-item-click and hotkey-event paths have no non-XCUITest
-  automated coverage on this branch.
+- `make test-ui` is order-sensitive: an earlier run flaked (status item at
+  y = -27 not hittable, plus one AX snapshot error) while the installed app was
+  running with the same bundle id. The clean rerun after `make stop` passed 5/5.
+- UI tests use `--demo` (MockProvider). The manual end-to-end check used the
+  owner's own provider and key (HTTP 200); no key material appears in docs, logs
+  or fixtures.
+- The status-item-click and hotkey-event paths still rely on XCUITest event
+  synthesis; there is no non-XCUITest automated coverage for them.
 
 ## M3 — Character
 
@@ -102,7 +165,7 @@ launch. Rebasing `feature/embedded-mascot` onto `ca05b28` fixed it; a fresh
   - `no leaks found` (~726324 bytes / 726.32 KB scanned).
 - `make mascot-validate` (exit 0): `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`.
 - `make test-ui` (exit 0): xcodebuild `test -project YoChamps.xcodeproj -scheme YoChampsUITests -destination platform=macOS`; four cases, all passed:
-  - `testHotkeyOpensAsk` passed (6.300 s) — ⌘⌥Y reopens Ask after Esc.
+  - `testHotkeyOpensAsk` passed (6.300 s) — ⌘⌥Y reopens Ask after Esc (default at the time).
   - `testEscapeClosesAsk` passed (3.949 s).
   - `testShowHideKeepsProcessAlive` passed (13.774 s).
   - `testDragThenRelaunchRestoresPosition` passed (8.624 s).

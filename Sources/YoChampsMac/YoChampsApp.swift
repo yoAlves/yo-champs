@@ -9,7 +9,7 @@ import YoChampsProviders
 
 /// Name registration touches UserDefaults and AppKit state: main actor only.
 @MainActor extension KeyboardShortcuts.Name {
-    static let ask = Self("ask", default: .init(.y, modifiers: [.command, .option]))
+    static let ask = Self("ask", default: .init(.k, modifiers: [.command, .option]))
 }
 
 /// M2 shell: menu bar item, floating ask panel, real provider conversation,

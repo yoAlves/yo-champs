@@ -1,4 +1,5 @@
 import AppKit
+import CoreGraphics
 import XCTest
 
 /// M3 critical flow. The app is launched with `--demo` so no provider, key or
@@ -21,6 +22,7 @@ final class YoChampsUITests: XCTestCase {
 
     private var app: XCUIApplication!
     private var savedDefaults: SavedDefaults?
+    private var launchedPID: pid_t?
 
     override func setUp() {
         super.setUp()
@@ -60,11 +62,44 @@ final class YoChampsUITests: XCTestCase {
         dismissAsk()
         XCTAssertFalse(field.exists)
 
-        // KeyboardShortcuts' default for the `ask` name is Command-Option-Y.
-        app.typeKey(XCUIKeyboardKey("y"), modifierFlags: [.command, .option])
+        // KeyboardShortcuts' default for the `ask` name is Command-Option-K.
+        app.typeKey(XCUIKeyboardKey("k"), modifierFlags: [.command, .option])
 
-        XCTAssertTrue(field.waitForExistence(timeout: 10), "Ask did not open on Command-Option-Y")
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "Ask did not open on Command-Option-K")
         XCTAssertTrue(app.buttons[ID.askSend].waitForExistence(timeout: 5))
+    }
+
+    /// The Ask panel must stay on screen when another app becomes active.
+    /// `NSPanel.hidesOnDeactivate` defaults to true, which made the panel
+    /// vanish while the app was inactive and broke the hotkey from another
+    /// app. AX exposes only the menu bar for an inactive accessory app, so the
+    /// assertion reads the window server list like the manual E2E did.
+    func testAskStaysOnScreenWhenAnotherAppIsActive() {
+        launchApp()
+        let field = app.textFields[ID.askField]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+
+        XCUIApplication(bundleIdentifier: "com.apple.finder").activate()
+
+        // `activate()` returns before the switch lands; wait until YoChamps is
+        // no longer frontmost or the assertion could pass on the old state
+        // before the app deactivates.
+        let deadline = Date().addingTimeInterval(5)
+        while NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ID.suite,
+              Date() < deadline
+        {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        XCTAssertNotEqual(
+            NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+            ID.suite,
+            "app did not deactivate"
+        )
+
+        XCTAssertTrue(
+            panelStaysOnScreen(for: 2),
+            "Ask left the screen when another app became active"
+        )
     }
 
     /// Esc dismisses the floating prompt without quitting the app.
@@ -142,6 +177,7 @@ final class YoChampsUITests: XCTestCase {
     // MARK: - Helpers
 
     private func launchApp() {
+        let before = runningPIDs()
         app.launch()
         // LSUIElement runs as an accessory, so it never reports RunningForeground.
         let deadline = Date().addingTimeInterval(10)
@@ -149,9 +185,34 @@ final class YoChampsUITests: XCTestCase {
             Thread.sleep(forTimeInterval: 0.1)
         }
         XCTAssertNotEqual(app.state, .notRunning, "app did not launch")
+        // The launched instance is the PID that appeared after launch, so a
+        // stray installed copy cannot satisfy the window-server assertion.
+        launchedPID = runningPIDs().subtracting(before).first
         // An inactive accessory app exposes only its menu bar to the AX tree.
         // Activating it is required before its panels become queryable.
         app.activate()
+        // Activation is a request: wait until the app is frontmost, otherwise
+        // a case that left another app active makes the next AX query see a
+        // disabled window.
+        let activationDeadline = Date().addingTimeInterval(5)
+        while NSWorkspace.shared.frontmostApplication?.bundleIdentifier != ID.suite,
+              Date() < activationDeadline
+        {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        XCTAssertEqual(
+            NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
+            ID.suite,
+            "app did not become frontmost"
+        )
+    }
+
+    private func runningPIDs() -> Set<pid_t> {
+        Set(
+            NSRunningApplication
+                .runningApplications(withBundleIdentifier: ID.suite)
+                .map(\.processIdentifier)
+        )
     }
 
     /// SwiftUI exposes `Text` through the AX `value`; XCUITest predicates on
@@ -193,9 +254,38 @@ final class YoChampsUITests: XCTestCase {
     }
 
     private func isAppRunning() -> Bool {
-        !NSRunningApplication.runningApplications(
-            withBundleIdentifier: "com.yurioliveira.yochamps"
-        ).isEmpty
+        !NSRunningApplication.runningApplications(withBundleIdentifier: ID.suite).isEmpty
+    }
+
+    /// True only when the launched instance keeps a floating-level window in
+    /// the window server's on-screen list for the whole interval. A late hide
+    /// fails on the first sample that misses, so the check cannot pass on the
+    /// pre-deactivation state. Screen Recording is not needed: owner PID and
+    /// layer are available without it.
+    private func panelStaysOnScreen(for duration: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(duration)
+        repeat {
+            if !onScreenPanelExists() {
+                return false
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        } while Date() < deadline
+        return true
+    }
+
+    private func onScreenPanelExists() -> Bool {
+        guard let launchedPID else { return false }
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID)
+            as? [[String: Any]] ?? []
+        return windows.contains { window in
+            guard
+                let owner = window[kCGWindowOwnerPID as String] as? Int,
+                let layer = window[kCGWindowLayer as String] as? Int
+            else {
+                return false
+            }
+            return pid_t(owner) == launchedPID && layer == NSWindow.Level.floating.rawValue
+        }
     }
 
     private func restore(_ value: Any?, forKey key: String, in defaults: UserDefaults) {

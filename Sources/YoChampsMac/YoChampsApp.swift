@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import KeyboardShortcuts
 import OSLog
 import SwiftUI
@@ -59,6 +60,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panelController: AskPanelController?
     private var settingsController: SettingsPanelController?
     private var mascotController: MascotPanelController?
+    private var mascotRenderer: MascotRenderer?
+    private var mascotStateCancellable: AnyCancellable?
     private var engineBox: EngineBox?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -78,9 +81,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         setupMascot(model: model)
 
+        // The hotkey opens the Ask bubble through the same path as the menu
+        // item, so Esc dismissal and mascot anchoring behave identically.
         KeyboardShortcuts.onKeyDown(for: .ask) { [weak self] in
             Task { @MainActor in
-                self?.toggleMascot()
+                self?.showPanel()
             }
         }
 
@@ -155,11 +160,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 pack = fallback
             }
-            let controller = MascotPanelController(renderer: MascotRenderer(pack: pack)) {
-                // Every hide path — menu, hotkey or ⌘W — abandons the turn.
+            let renderer = MascotRenderer(pack: pack)
+            mascotRenderer = renderer
+            let controller = MascotPanelController(renderer: renderer) {
+                // Every hide path — menu or ⌘W — abandons the turn.
                 model.stop()
             }
             mascotController = controller
+
+            renderer.setState(model.state)
+            mascotStateCancellable = model.$state.sink { [weak self] state in
+                Task { @MainActor in
+                    self?.mascotRenderer?.setState(state)
+                }
+            }
+
             controller.show()
         } catch {
             logger.error("mascot panel unavailable: \(String(describing: error), privacy: .private)")

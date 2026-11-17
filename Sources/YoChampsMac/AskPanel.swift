@@ -6,14 +6,30 @@ import SwiftUI
 /// hosted `AskView`, not anchored to a separate window.
 final class AskPanel: NSPanel {
     var onEscape: (() -> Void)?
+    var onBecomeKey: (() -> Void)?
 
     override var canBecomeKey: Bool {
         true
     }
 
+    /// Key status lands a beat after summon (the app activates asynchronously),
+    /// so focus must be driven from this event, not from `show()`.
+    override func becomeKey() {
+        super.becomeKey()
+        onBecomeKey?()
+    }
+
     override func cancelOperation(_ sender: Any?) {
         onEscape?()
     }
+}
+
+/// Carried by the panel controller into `AskView`; each `show()` bumps the
+/// token so the view can re-focus the field. A counter, not a flag: the red
+/// close button bypasses `hide()`, so a boolean could stay `true`.
+@MainActor
+final class PanelState: ObservableObject {
+    @Published var showToken = 0
 }
 
 /// Single dismissal hook for the close button and ⌘W. Esc goes through
@@ -39,6 +55,7 @@ final class AskPanelController {
     private let model: CompanionViewModel
     private let closeHandler: PanelCloseHandler
     private let renderer: MascotRenderer
+    private let panelState = PanelState()
 
     init(model: CompanionViewModel, renderer: MascotRenderer) {
         self.model = model
@@ -69,8 +86,20 @@ final class AskPanelController {
         let hidePanel: () -> Void = { [weak self] in
             self?.hide()
         }
-        panel.contentView = NSHostingView(rootView: AskView(model: model, onClose: hidePanel, renderer: renderer))
+        panel.contentView = NSHostingView(rootView: AskView(
+            model: model,
+            onClose: hidePanel,
+            renderer: renderer,
+            panelState: panelState
+        ))
         panel.onEscape = hidePanel
+        // Covers the first summon, when the app is still inactive at `show()`:
+        // the bump from `show()` lands while the panel is not key yet and the
+        // focus set is a no-op; this one fires when the window actually
+        // becomes key, after activation completes.
+        panel.onBecomeKey = { [weak self] in
+            self?.panelState.showToken += 1
+        }
         panel.center()
     }
 
@@ -79,6 +108,7 @@ final class AskPanelController {
         panel.center()
         renderer.setHidden(false)
         panel.makeKeyAndOrderFront(nil)
+        panelState.showToken += 1
     }
 
     func toggle() {

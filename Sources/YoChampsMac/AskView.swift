@@ -4,6 +4,7 @@ struct AskView: View {
     @ObservedObject var model: CompanionViewModel
     let onClose: () -> Void
     let renderer: MascotRenderer
+    @ObservedObject var panelState: PanelState
 
     @FocusState private var isFocused: Bool
 
@@ -81,6 +82,9 @@ struct AskView: View {
         .padding(16)
         .frame(minWidth: 520, minHeight: 260)
         .onAppear {
+            isFocused = true
+        }
+        .onChange(of: panelState.showToken) { _, _ in
             isFocused = true
         }
         .onExitCommand(perform: onClose)

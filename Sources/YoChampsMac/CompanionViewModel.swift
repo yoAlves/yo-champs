@@ -5,8 +5,17 @@ import YoChampsCore
 /// task so closing the panel tears down the provider stream.
 @MainActor
 final class CompanionViewModel: ObservableObject {
+    /// One transcript round as shown in the panel. Display-only: the engine
+    /// owns the real conversation context.
+    struct ChatTurn: Identifiable, Equatable {
+        let id = UUID()
+        let question: String
+        var answer: String
+    }
+
     @Published var question = ""
     @Published private(set) var answer = ""
+    @Published private(set) var turns: [ChatTurn] = []
     @Published private(set) var state: CompanionState = .idle
     @Published private(set) var errorMessage: String?
 
@@ -57,6 +66,7 @@ final class CompanionViewModel: ObservableObject {
         turn?.cancel()
         question = ""
         answer = ""
+        turns.append(ChatTurn(question: trimmed, answer: ""))
         errorMessage = nil
         turn = Task { [weak self] in
             guard let self else {
@@ -81,6 +91,7 @@ final class CompanionViewModel: ObservableObject {
         turn?.cancel()
         turn = nil
         answer = ""
+        turns = []
         errorMessage = nil
         state = .idle
         Task { [weak self] in
@@ -110,6 +121,9 @@ final class CompanionViewModel: ObservableObject {
             state = newState
         case let .textDelta(delta):
             answer += delta
+            if !turns.isEmpty {
+                turns[turns.count - 1].answer += delta
+            }
         case .completed, .cancelled:
             break
         case let .failed(message):

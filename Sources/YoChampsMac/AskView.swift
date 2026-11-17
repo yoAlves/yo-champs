@@ -3,7 +3,7 @@ import SwiftUI
 struct AskView: View {
     @ObservedObject var model: CompanionViewModel
     let onClose: () -> Void
-    let renderer: MascotRenderer
+    @ObservedObject var renderer: MascotRenderer
     @ObservedObject var panelState: PanelState
 
     @FocusState private var isFocused: Bool

@@ -132,9 +132,8 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(isAppRunning())
     }
 
-    /// The mascot is embedded beside the answer in the Ask window. A long
-    /// reply must not overlap it, and its box keeps the renderer's fixed
-    /// display size (64pt frame * 2x scale = 128pt for the default pack).
+    /// The mascot is embedded in the Ask window header, with the answer in a
+    /// separate transcript below. Its avatar is a fixed 28pt square.
     func testEmbeddedMascotDoesNotOverlapLongAnswer() {
         launchApp()
 
@@ -169,9 +168,9 @@ final class YoChampsUITests: XCTestCase {
         let mascotFrame = mascot.frame
         let answerFrame = answer.frame
         XCTAssertFalse(mascotFrame.intersects(answerFrame), "mascot overlaps the answer text")
-        // AX reports the NSImageView 2pt wider than the 128pt renderer size
-        // (1pt per side); allow that measurement slack but never a shrink.
-        XCTAssertEqual(mascotFrame.width, 128, accuracy: 2, "mascot box shrank below 128pt")
+        // AX reports the image view within a couple of points of the 28pt
+        // avatar frame; allow that measurement slack but never a shrink.
+        XCTAssertEqual(mascotFrame.width, 28, accuracy: 2, "mascot avatar shrank below 28pt")
     }
 
     // MARK: - Helpers

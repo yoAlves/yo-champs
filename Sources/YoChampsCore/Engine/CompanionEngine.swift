@@ -106,7 +106,9 @@ public actor CompanionEngine {
             updated.messages.append(LLMMessage(role: .assistant, content: answer))
             try await store.save(updated)
 
-            emit.yield(.state(.happy))
+            let finalState: CompanionState = answer
+                .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .confused : .happy
+            emit.yield(.state(finalState))
             emit.yield(.completed)
         } catch is CancellationError {
             emit.yield(.state(.idle))

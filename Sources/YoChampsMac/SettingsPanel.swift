@@ -7,6 +7,7 @@ import YoChampsProviders
 final class SettingsPanelController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
     private let model: SettingsViewModel
+    private let onSaved: () -> Void
 
     init(
         store: ProviderConfigFileStore,
@@ -14,12 +15,18 @@ final class SettingsPanelController: NSObject, NSWindowDelegate {
         transport: any LLMHTTPTransport,
         onSaved: @escaping () -> Void
     ) {
+        self.onSaved = onSaved
         model = SettingsViewModel(
             store: store,
             secrets: secrets,
             transport: transport,
-            onSaved: onSaved
+            onSaved: {}
         )
+        super.init()
+        model.onSaved = { [weak self] in
+            onSaved()
+            self?.close()
+        }
     }
 
     func show() {

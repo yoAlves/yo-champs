@@ -8,6 +8,7 @@ final class YoChampsUITests: XCTestCase {
     private enum ID {
         static let askField = "askTextField"
         static let askSend = "askSendButton"
+        static let newChat = "newChatButton"
         static let mascotWindow = "mascotPanel"
         static let suite = "com.yurioliveira.yochamps"
         static let hotkeyKey = "KeyboardShortcuts_ask"
@@ -132,9 +133,30 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(isAppRunning())
     }
 
-    /// The mascot is embedded beside the answer in the Ask window. A long
-    /// reply must not overlap it, and its box keeps the renderer's fixed
-    /// display size (64pt frame * 2x scale = 128pt for the default pack).
+    /// The compact "+" button clears the chat transcript.
+    func testNewChatButtonClearsTranscript() {
+        launchApp()
+        XCTAssertNotNil(waitForAnswer(timeout: 15), "demo answer did not appear")
+
+        let newChat = app.buttons[ID.newChat]
+        XCTAssertTrue(newChat.waitForExistence(timeout: 5), "New Chat (+) button missing")
+        newChat.click()
+
+        XCTAssertTrue(waitForAnswerGone(timeout: 5), "New Chat did not clear the transcript")
+    }
+
+    /// Command-N is the advertised shortcut for the same action.
+    func testCommandNStartsNewChat() {
+        launchApp()
+        XCTAssertNotNil(waitForAnswer(timeout: 15), "demo answer did not appear")
+
+        app.typeKey(XCUIKeyboardKey("n"), modifierFlags: [.command])
+
+        XCTAssertTrue(waitForAnswerGone(timeout: 5), "Command-N did not clear the transcript")
+    }
+
+    /// The mascot is embedded in the Ask window header, with the answer in a
+    /// separate transcript below. Its avatar is a fixed 56pt square.
     func testEmbeddedMascotDoesNotOverlapLongAnswer() {
         launchApp()
 
@@ -169,9 +191,9 @@ final class YoChampsUITests: XCTestCase {
         let mascotFrame = mascot.frame
         let answerFrame = answer.frame
         XCTAssertFalse(mascotFrame.intersects(answerFrame), "mascot overlaps the answer text")
-        // AX reports the NSImageView 2pt wider than the 128pt renderer size
-        // (1pt per side); allow that measurement slack but never a shrink.
-        XCTAssertEqual(mascotFrame.width, 128, accuracy: 2, "mascot box shrank below 128pt")
+        // AX reports the image view within a couple of points of the 56pt
+        // avatar frame; allow that measurement slack but never a shrink.
+        XCTAssertEqual(mascotFrame.width, 56, accuracy: 2, "mascot avatar shrank below 56pt")
     }
 
     // MARK: - Helpers
@@ -191,14 +213,14 @@ final class YoChampsUITests: XCTestCase {
         // An inactive accessory app exposes only its menu bar to the AX tree.
         // Activating it is required before its panels become queryable.
         app.activate()
-        // Activation is a request: wait until the app is frontmost, otherwise
-        // a case that left another app active makes the next AX query see a
-        // disabled window.
-        let activationDeadline = Date().addingTimeInterval(5)
+        // Activation is a request: another app can take focus while we wait,
+        // so re-issue it until the app is frontmost before querying AX.
+        let activationDeadline = Date().addingTimeInterval(10)
         while NSWorkspace.shared.frontmostApplication?.bundleIdentifier != ID.suite,
               Date() < activationDeadline
         {
-            Thread.sleep(forTimeInterval: 0.1)
+            app.activate()
+            Thread.sleep(forTimeInterval: 0.2)
         }
         XCTAssertEqual(
             NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
@@ -234,6 +256,17 @@ final class YoChampsUITests: XCTestCase {
         return nil
     }
 
+    private func waitForAnswerGone(timeout: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if currentAnswer() == nil {
+                return true
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        return false
+    }
+
     private func dismissAsk() {
         let field = app.textFields[ID.askField]
         guard field.exists else { return }
@@ -242,9 +275,25 @@ final class YoChampsUITests: XCTestCase {
     }
 
     private func clickShowHide() {
-        // SwiftUI MenuBarExtra is exposed as a StatusItem with an internal AX
-        // title, not as a MenuBarItem named after the app.
-        let statusItem = app.statusItems.firstMatch
+        // Only one status item is exposed to AX here, and macOS can report it
+        // as non-hittable for a beat after activation. Poll instead of taking
+        // firstMatch on a single sample.
+        let deadline = Date().addingTimeInterval(10)
+        var statusItem: XCUIElement?
+        while Date() < deadline {
+            let candidates = app.statusItems.allElementsBoundByIndex
+            statusItem = candidates.first {
+                $0.isHittable && $0.title.localizedCaseInsensitiveContains("Champ")
+            } ?? candidates.first { $0.isHittable }
+            if statusItem != nil {
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        guard let statusItem else {
+            XCTFail("No hittable status item found")
+            return
+        }
         XCTAssertTrue(statusItem.waitForExistence(timeout: 10), "Status item not found")
         statusItem.click()
 

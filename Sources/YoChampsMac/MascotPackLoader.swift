@@ -14,6 +14,13 @@ public enum MascotPackLoadResult: Sendable {
     case fallback(MascotPack, message: String)
 }
 
+/// A directory-listing failure is reported to the caller rather than thrown:
+/// the default pack is still available and must keep Champ on screen.
+private enum LocalCandidatesResult {
+    case found([MascotPackCandidate])
+    case unreadable
+}
+
 /// Discovers packs on disk and hands the pure selector a stable list of
 /// validated candidates. The fallback is always the bundled default, so a
 /// broken or ambiguous local pack can never leave the app without a mascot.
@@ -28,7 +35,16 @@ public struct MascotPackLoader {
     public func load() throws -> MascotPackLoadResult {
         let validator = MascotPackValidator(imageSize: Self.pngSize)
         let defaultPack = try loadDefaultPack(validator: validator)
-        let candidates = try localCandidates(validator: validator)
+        let candidates: [MascotPackCandidate]
+        switch localCandidates(validator: validator) {
+        case let .found(found):
+            candidates = found
+        case .unreadable:
+            return .fallback(
+                defaultPack,
+                message: "Local mascot packs could not be read; using default Champ."
+            )
+        }
 
         switch MascotPackSelector.select(localPacks: candidates) {
         case .default:
@@ -73,7 +89,7 @@ public struct MascotPackLoader {
 
     // MARK: - Local packs
 
-    private func localCandidates(validator: MascotPackValidator) throws -> [MascotPackCandidate] {
+    private func localCandidates(validator: MascotPackValidator) -> LocalCandidatesResult {
         let mascots = supportDirectory.appendingPathComponent("Mascots", isDirectory: true)
         let entries: [URL]
         do {
@@ -85,10 +101,10 @@ public struct MascotPackLoader {
         } catch {
             let nsError = error as NSError
             if nsError.domain == NSCocoaErrorDomain, nsError.code == NSFileReadNoSuchFileError {
-                return []
+                return .found([])
             }
             logger.error("local mascot packs could not be listed: \(String(describing: error), privacy: .private)")
-            throw error
+            return .unreadable
         }
 
         var candidates: [MascotPackCandidate] = []
@@ -117,7 +133,7 @@ public struct MascotPackLoader {
                 ))
             }
         }
-        return candidates
+        return .found(candidates)
     }
 
     // MARK: - Helpers

@@ -25,7 +25,7 @@ struct SettingsView: View {
 
             Form {
                 HStack {
-                    Text("Show Champ hotkey")
+                    Text("Ask hotkey")
                     Spacer()
                     KeyboardShortcuts.Recorder(for: .ask)
                 }

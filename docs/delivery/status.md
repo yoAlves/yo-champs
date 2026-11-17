@@ -1,5 +1,47 @@
 # Status
 
+## M3 — Character
+
+**State:** complete — local gate green; PR opened, awaiting CI and whole-branch review.
+**Date:** 2026-11-17.
+**Branch:** `feature/m3-character` (PR pending; no merge performed by the gate task).
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0: SwiftFormat 0/62 files need formatting, SwiftLint 0 violations in 59 files, 119 tests / 18 suites (50 provider + 69 core), app + validator builds, 1 pack, gitleaks no leaks (~726 KB) |
+| `make mascot-validate` | pass | exit 0; `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` |
+| `make test-ui` | pass | exit 0; `** TEST SUCCEEDED **` — 4 XCUITest cases, 0 failures (hotkey → Ask, Esc, show/hide, drag + relaunch) |
+| `make deploy` | pass | exit 0; installed `~/Applications/YoChamps.app` (unsigned local build) |
+| `make restart` | pass | exit 0; `stop` + `open`, installed app reopened |
+
+### Evidence
+
+- Full chain `make verify && make mascot-validate && make test-ui && make deploy && make restart` run on 2026-11-17: all five commands exit 0 (`CHAIN_EXIT=0`), each with short-circuit `&&` semantics and per-command exit codes captured.
+- `make verify` (exit 0):
+  - `0/62 files require formatting, 36 files skipped.`
+  - `Done linting! Found 0 violations, 0 serious in 59 files.`
+  - `✔ Test run with 50 tests in 5 suites passed after 0.110 seconds.` (provider)
+  - `✔ Test run with 69 tests in 13 suites passed after 0.010 seconds.` (core) — 119 Swift Testing tests total.
+  - `Build complete!` for the app bundle and the mascot validator.
+  - `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`
+  - `no leaks found` (~726324 bytes / 726.32 KB scanned).
+- `make mascot-validate` (exit 0): `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`.
+- `make test-ui` (exit 0): xcodebuild `test -project YoChamps.xcodeproj -scheme YoChampsUITests -destination platform=macOS`; four cases, all passed:
+  - `testHotkeyOpensAsk` passed (6.300 s) — ⌘⌥Y reopens Ask after Esc.
+  - `testEscapeClosesAsk` passed (3.949 s).
+  - `testShowHideKeepsProcessAlive` passed (13.774 s).
+  - `testDragThenRelaunchRestoresPosition` passed (8.624 s).
+  - `Executed 4 tests, with 0 failures (0 unexpected) in 32.647 (32.652) seconds`; `** TEST SUCCEEDED **`; xcresult `Test-YoChampsUITests-2026.11.17_00-02-35--0300.xcresult`.
+- `make deploy` (exit 0): `stopped YoChamps (if it was running)`, `installed: /Users/yurioliveiraalves/Applications/YoChamps.app`, `note: local build only — unsigned, not notarized, not published`.
+- `make restart` (exit 0): `stopped YoChamps (if it was running)`; the `open` prerequisite relaunches the installed app.
+
+### Gaps and risks
+
+- PR CI (`core (linux)`, `app + gates (macos)`) and whole-branch review are controller-owned and pending. No hash is pinned here: the evidence commit becomes the new branch head, so pinning one would drift (the M2 pattern).
+- No real-endpoint Q&A in this gate: UI tests launch with `--demo` (MockProvider), so no personal Keychain key is used.
+
 ## M2 — Real providers
 
 **State:** complete — merged to `main` via PR [#5](https://github.com/yoAlves/yo-champs/pull/5) (merge commit `1dc305c`).

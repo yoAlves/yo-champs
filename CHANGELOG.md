@@ -18,6 +18,12 @@ until the public contract stabilizes.
 - M2: Settings/onboarding, JSON conversation history and a local provider check.
 - M3: animated Champ mascot panel with drag/persistence, global hotkey, menu show/hide and XCUITest.
 
+### Fixed
+
+- Bundle SwiftPM resource bundles into the `.app` so the installed app launches; `make deploy` now fails if the app exits immediately after opening.
+- Keep the typed API key visible after Test Connection until Save or close, and give the connection test a 256-token budget so reasoning models can answer.
+- Close the Settings window on Save and reset the API key only when the panel closes.
+
 ## [0.0.0-m0] - 2026-11-16
 
 First public milestone (prerelease). Foundation only; the conversation loop

@@ -13,7 +13,7 @@
 | `make verify` | pass | exit 0: SwiftFormat 0/62 files need formatting, SwiftLint 0 violations in 59 files, 119 tests / 18 suites (50 provider + 69 core), app + validator builds, 1 pack, gitleaks no leaks (~726 KB) |
 | `make mascot-validate` | pass | exit 0; `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` |
 | `make test-ui` | pass | exit 0; `** TEST SUCCEEDED **` — 4 XCUITest cases, 0 failures (hotkey → Ask, Esc, show/hide, drag + relaunch) |
-| `make deploy` | pass | exit 0; installed `~/Applications/YoChamps.app` (unsigned local build) |
+| `make deploy` | pass (see correction) | exit 0; installed `~/Applications/YoChamps.app` (unsigned local build). **Correction:** at the M3 gate this check was green even though the app aborted at launch — the bundled `KeyboardShortcuts` resource was missing. Fixed in PR #8. |
 | `make restart` | pass | exit 0; `stop` + `open`, installed app reopened |
 | `core (linux)` (CI) | pass | PR #7 required check green, ~1m on `macos-15-intel` runner set |
 | `app + gates (macos)` (CI) | pass | PR #7 required check green, ~4–5m |
@@ -40,6 +40,7 @@
 - `make deploy` (exit 0): `stopped YoChamps (if it was running)`, `installed: /Users/yurioliveiraalves/Applications/YoChamps.app`, `note: local build only — unsigned, not notarized, not published`.
 - `make restart` (exit 0): `stopped YoChamps (if it was running)`; the `open` prerequisite relaunches the installed app.
 
+- **M3 deploy evidence correction (PR #8):** `make deploy` exited 0 during the M3 gate, but the installed app aborted immediately at launch with `Fatal error: unable to find bundle named KeyboardShortcuts_KeyboardShortcuts`. The minimal `.app` built by `scripts/bundle.sh` copied the binary, plist and mascot pack but not the SwiftPM resource bundles. The gate missed it because `open` returns 0 even when the app dies. PR #8 makes `bundle.sh` copy `*.bundle` into `Contents/Resources` (failing clearly if the required one is absent) and makes `deploy.sh` verify the process is alive after launch. Verified locally: `make verify` exit 0 (119 tests), `make deploy` exit 0 with the app process alive.
 - PR CI: `core (linux)` and `app + gates (macos)` both green on the PR head. No run id or head hash is pinned here — the branch head moves with evidence commits, so pinning would drift (the M2 pattern).
 - Whole-branch review over `18ebded..218967e`: 0 critical, 1 important — an unreadable local-pack directory could drop Champ and misreport the cause. Fixed in `11fd196`; scoped re-review `218967e..11fd196` verdict: all findings ADDRESSED, no new Critical/Important breakage.
 - Post-review CI compatibility commits: `9818165` (`redundantSelf` flag difference between local and CI SwiftFormat) and `ef83da9` (`isolated deinit` unsupported by CI's Swift 6.2–6.3). `make verify` remained exit 0 (119 tests) after both; CI went green on `ef83da9`.

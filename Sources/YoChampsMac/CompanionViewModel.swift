@@ -14,7 +14,6 @@ final class CompanionViewModel: ObservableObject {
     }
 
     @Published var question = ""
-    @Published private(set) var answer = ""
     @Published private(set) var turns: [ChatTurn] = []
     @Published private(set) var state: CompanionState = .idle
     @Published private(set) var errorMessage: String?
@@ -65,7 +64,6 @@ final class CompanionViewModel: ObservableObject {
 
         turn?.cancel()
         question = ""
-        answer = ""
         turns.append(ChatTurn(question: trimmed, answer: ""))
         errorMessage = nil
         turn = Task { [weak self] in
@@ -90,7 +88,6 @@ final class CompanionViewModel: ObservableObject {
     func newChat() {
         turn?.cancel()
         turn = nil
-        answer = ""
         turns = []
         errorMessage = nil
         state = .idle
@@ -120,7 +117,6 @@ final class CompanionViewModel: ObservableObject {
         case let .state(newState):
             state = newState
         case let .textDelta(delta):
-            answer += delta
             if !turns.isEmpty {
                 turns[turns.count - 1].answer += delta
             }

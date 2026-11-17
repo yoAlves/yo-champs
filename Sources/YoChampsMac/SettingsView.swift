@@ -15,6 +15,13 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            if let mascotStatus = model.mascotStatus {
+                Text(mascotStatus)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+            }
+
             Form {
                 TextField("Base URL (https://…/v1)", text: $model.baseURL)
                 TextField("Model", text: $model.model)

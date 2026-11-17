@@ -21,7 +21,7 @@
 | Threat | Mitigation |
 |---|---|
 | API key leaked to disk, logs, fixtures or git | Keychain only; `secretRef`; gitleaks; redacted logging; no keys in screenshots |
-| Prompt injection via provider output or future attachments | system/developer/user hierarchy; content is data; no side-effectful tools; adversarial eval (M4) |
+| Prompt injection via provider output or future attachments | system/developer/user hierarchy; content is data; no side-effectful tools; adversarial eval is an open M4 backlog item |
 | Malicious provider endpoint | user-configured URL, visible in settings; TLS; no automatic redirects to unexpected hosts; clear errors |
 | Local pack with malicious/huge assets | validator limits (manifest 64 KB, sheet 5 MB, preview 2 MB) and dimension checks; no code execution from packs |
 | History exposure on a shared Mac | local files under the user account; clear-history action (M2); no telemetry |

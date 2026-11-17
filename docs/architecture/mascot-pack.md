@@ -96,12 +96,13 @@ path and a user-facing reason and exit non-zero.
 The validator is the gate for US7. Runtime loading reuses the same
 `MascotManifest` types, so a pack that validates cannot fail decoding later.
 
-## Generating the placeholder
+## Generating the default pack
 
-The default M0 art is generated from code and committed as a placeholder:
+The default Champ pack is generated from code and committed:
 
 ```sh
-swift scripts/gen-placeholder-pack.swift Resources/Mascots/Default
+python3 scripts/gen-champ-pack.py Resources/Mascots/Default
 ```
 
-The M3 character pack replaces it. Provenance and license are in `ASSETS.md`.
+The generator needs Python 3 with Pillow. Run `make mascot-validate` after any
+change. Provenance and license are in `ASSETS.md`.

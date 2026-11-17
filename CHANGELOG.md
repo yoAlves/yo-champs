@@ -11,28 +11,44 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-17
+
+First functional V0 release: the menu bar companion answers, streams, keeps
+history and renders Champ inside the Ask window. Hardening items outside the V0
+definition of done (evals, injection fixtures, performance report, release
+dry-run) remain a post-release backlog.
+
 ### Added
 
-- M2: versioned provider profiles and config with Keychain-backed secrets.
-- M2: OpenAI-compatible streaming client, SSE parser, typed errors and retries.
-- M2: Settings/onboarding, JSON conversation history and a local provider check.
-- M3: animated Champ mascot panel with drag/persistence, global hotkey, menu show/hide and XCUITest.
-- Embed Champ in the Ask window; remove the floating panel, drag and position persistence; Show/Hide now toggles Ask.
-- Resizable Ask panel: the window frame (size and position) persists across launches via `frameAutosaveName`.
-- Ask panel restyled as a chat: multi-turn transcript, CHAMP badge + mascot avatar header, input pinned at the bottom.
-- Ask panel: compact + button and ⌘N start a new chat; questions show unprefixed, answers with a bullet.
+- Menu bar app with Ask, Show/Hide Ask, Settings and Quit; `LSUIElement`, no Dock icon.
+- Global hotkey (⌥⌘K by default, customizable) opens Ask and focuses the input.
+- OpenAI-compatible streaming provider with provider profiles, SSE parsing, typed errors and retries.
+- Keychain-backed API keys; `config.json` stores only `secretRef`.
+- Settings/onboarding with base URL, model, headers and “Test connection”.
+- Multi-turn chat transcript; history persisted as versioned JSON and reused as
+  context (the transcript starts fresh on relaunch); new-chat action (`+`, ⌘N).
+- Embedded animated Champ driven by semantic `CompanionState`s, plus local mascot packs.
+- Resizable Ask window with its frame persisted across launches.
+- XCUITest critical flow: hotkey, Esc, show/hide, embedded mascot layout and new chat.
 
 ### Changed
 
-- Default Ask hotkey is now ⌥⌘K; it stays customizable in Settings.
-- Ask panel: input pinned to the bottom edge, icon cancel button while streaming, pulsing waiting indicator instead of a status caption.
+- One window is the product: Champ is embedded in the Ask header; the separate
+  mascot panel and its drag/position persistence were removed. The Ask window
+  itself stays movable and frame-autosaved (ADR 0012).
+- Show/Hide now toggles the Ask window.
+- Ask is a chat: transcript above, input pinned at the bottom, cancel button and
+  a waiting indicator while a turn streams.
 
 ### Fixed
 
-- Keep the Ask panel on screen while the app is inactive (`NSPanel.hidesOnDeactivate` defaults to `true`), so the global hotkey reliably brings it to the front.
-- Bundle SwiftPM resource bundles into the `.app` so the installed app launches; `make deploy` now fails if the app exits immediately after opening.
-- Keep the typed API key visible after Test Connection until Save or close, and give the connection test a 256-token budget so reasoning models can answer.
-- Close the Settings window on Save and reset the API key only when the panel closes.
+- Bundle SwiftPM resource bundles into the `.app` so the installed app launches;
+  `make deploy` fails if the app exits immediately after opening.
+- Keep the Ask panel on screen while the app is inactive (`hidesOnDeactivate`),
+  so the global hotkey reliably brings it forward.
+- Activate and focus Ask on every summon, including the first one after launch.
+- Keep the typed API key visible after Test Connection until Save or close; give
+  the connection test a 256-token budget so reasoning models can answer.
 
 ## [0.0.0-m0] - 2026-11-16
 
@@ -53,5 +69,6 @@ starts in M1.
 - Project `AGENTS.md`, `opencode.jsonc`, `.gitignore`, `.env.example`,
   `.gitleaks.toml`, LICENSE, ASSETS.md, SECURITY.md.
 
-[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.0.0-m0...main
+[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.1.0...main
+[0.1.0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.0
 [0.0.0-m0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.0.0-m0

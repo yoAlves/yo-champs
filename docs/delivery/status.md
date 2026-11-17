@@ -1,10 +1,68 @@
 # Status
 
+## Current state (2026-11-17)
+
+**Version:** 0.1.0 — `v0.1.0` cut from `main` after the release PR merges.
+**Milestones:** M0–M3 complete and merged. M4 hardening is an open
+post-release backlog (release ruling in `milestones/M4.md`).
+**App:** functional V0 loop — menu bar, ⌥⌘K, streaming, multi-turn persisted
+context (the visible transcript starts fresh), embedded Champ,
+Settings/Keychain, resizable Ask window.
+**Gate:** `make verify` and `make test-ui` green on `release/v0.1.0` (evidence
+below).
+**Open:** evals, injection fixtures, performance report, `make release-dry-run`,
+recorded demo, public checklist. V0.1 features stay out of this release.
+
+## v0.1.0 — functional V0 (2026-11-17)
+
+**Branch:** `release/v0.1.0` → PR → `main`. **Tag:** `v0.1.0` (after merge).
+**Release notes:** `releases/v0.1.0.md`.
+
+### What changed
+
+- Documentation reconciliation with the shipped product: ADR 0012 (Champ
+  embedded in Ask), product v1.4, milestone statuses, architecture, security
+  and README.
+- Version `0.1.0` in `App/Info.plist`; the menu reads the bundle version.
+- Removed dead code: the unused `MascotImageView` and the retired
+  `gen-placeholder-pack.swift`; the menu item is now “Show/Hide Ask”.
+- Changelog cut for `0.1.0`; release notes added.
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0: SwiftFormat 0/62 need formatting (44 skipped); SwiftLint 0 violations in 60 files; 50 provider + 5 Mac + 69 core = **124 tests / 19 suites**; app + validator builds; 1 pack; gitleaks ~805 KB, `no leaks found` |
+| `make test-ui` | pass | exit 0; 7 XCUITest cases, 0 failures in 51.592 s; `** TEST SUCCEEDED **` |
+| `make mascot-validate` | pass | `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` (inside `make verify`) |
+| Review | pass | `@reviewer`: 0 critical / 2 important (fixed) / 6 suggestions; focused re-review `APPROVE_WITH_NOTES`, no critical/important remaining |
+
+### Ruling
+
+`v0.1.0` was cut on the V0 definition of done instead of waiting for M4
+hardening. M0–M3 gates were green and merged; M4 remains an open backlog. The
+scoped exception is recorded in `docs/delivery/gates.md` and `milestones/M4.md`.
+
+### Gaps and risks
+
+- `make test-ui` is order-sensitive; stop an installed instance (`make stop`)
+  before running it.
+- UI tests launch with `--demo` (MockProvider); the real Keychain/provider path
+  is manual.
+- The visible transcript is not repopulated on relaunch; `history.json` is
+  loaded as model context only.
+- M4 hardening (evals, injection, performance, release dry-run, demo) is open.
+- The tag is unsigned/local-only; distribution is post-V0.
+
+## History
+
+The sections below are dated gate records. They are kept as evidence of the
+state at the time; where a decision was later superseded, the ADR is referenced.
+
 ## Embedded mascot (post-M3) — `feature/embedded-mascot` (PR #9)
 
-**State:** code complete. The latest gate run is green: `make verify`,
-`make test-ui` (5/5 after stopping the installed instance) and `make deploy`.
-An earlier `test-ui` evidence run flaked on the status-item click; see below.
+**State:** merged 2026-11-17 (PR #9); the final product shape is the chat panel
+from PR #13 (ADR 0012). The paragraphs below are the historical gate record.
 **Date:** 2026-11-17.
 **Branch:** `feature/embedded-mascot`, rebased onto the PR #8 merge `ca05b28`
 (which carries the SwiftPM resource-bundle fix), +6 commits vs `origin/main`.
@@ -12,8 +70,8 @@ An earlier `test-ui` evidence run flaked on the status-item click; see below.
 ### Product decision
 
 Champ is now embedded in the Ask window. The floating mascot panel, its drag and
-position persistence were removed. The menu "Show/Hide Champ" now toggles the Ask
-window. The global hotkey default is ⌘⌥K (the `KeyboardShortcuts` default),
+position persistence were removed. The original "Show/Hide Champ" item (now
+"Show/Hide Ask") toggles the Ask window. The global hotkey default is ⌘⌥K (the `KeyboardShortcuts` default),
 customizable in Settings, and reopens Ask.
 
 ### Gate (evidence run 2026-11-17, 10:13–10:17 -03)
@@ -135,9 +193,9 @@ requires no installed instance with the same bundle id (`make stop` first).
 
 ## M3 — Character
 
-**State:** complete — local gate, PR CI and whole-branch review green; ready to merge.
+**State:** complete — merged via PR [#7](https://github.com/yoAlves/yo-champs/pull/7); the separate floating panel and drag were superseded by ADR 0012.
 **Date:** 2026-11-17.
-**Branch:** `feature/m3-character` (PR [#7](https://github.com/yoAlves/yo-champs/pull/7); no merge performed by the gate task).
+**Branch:** `feature/m3-character` (PR #7, merged 2026-11-17).
 
 ### Gate
 
@@ -235,9 +293,9 @@ requires no installed instance with the same bundle id (`make stop` first).
 
 ## M1 — Conversation loop
 
-**State:** implementation complete; local gate green; awaiting review and PR.
+**State:** complete — merged via PR [#4](https://github.com/yoAlves/yo-champs/pull/4).
 **Date:** 2026-11-16.
-**Branch:** `feature/m1-loop` (local; PR pending).
+**Branch:** `feature/m1-loop` (PR #4, merged 2026-11-16).
 
 ### Gate
 
@@ -269,9 +327,9 @@ requires no installed instance with the same bundle id (`make stop` first).
 
 ### Gaps and risks
 
-- No full Xcode → no `test-ui`, no automated screenshot of panel streaming.
-  Manual visual confirmation of bubble streaming and Esc is still owed; engine
-  behaviour is covered by tests.
+- No full Xcode at M1 → no `test-ui` and no automated screenshot of streaming.
+  Manual visual confirmation was still owed then; M3 XCUITest and the M3 gate
+  later covered the panel flow.
 - `main` is protected; push/PR/merge require owner approval.
 
 ## M0 — Foundation (baseline)

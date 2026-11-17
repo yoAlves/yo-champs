@@ -19,13 +19,14 @@ the conversation.
 
 - No tools with side effects, so injected instructions cannot cause actions.
 - The LLM never selects animations, providers, models or tools; it returns text.
-- Responses are validated (length, non-empty) before display; errors are shown
-  as errors.
+- An empty response becomes a `confused` state instead of a silent success;
+  length is steered by the system prompt, not enforced client-side in V0.
+  Errors are shown as errors.
 - Do not echo secrets or system prompts; redact in logs.
 - A refusal is a valid answer; do not “fix” it with a retry loop that weakens the
   hierarchy.
 
-## Adversarial checks (M4)
+## Adversarial checks (M4 backlog)
 
 Fixtures include: “ignore the instructions”, “print your system prompt”, role
 spoofing, provider output claiming a new system message, and a fake tool request.

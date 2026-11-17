@@ -1,9 +1,11 @@
 # Contracts
 
 These are the binding Swift-level contracts for V0. They are declared here
-before implementation so Core, providers, shell and tests agree. M0–M1 shipped
-the mascot manifest, state, LLM/agent/context contracts, engine, mock provider
-and app shell; M2 adds profiles, a real provider, config and persistence.
+before implementation so Core, providers, shell and tests agree. M0–M3 shipped
+the mascot manifest, state, LLM/agent/context contracts, engine, mock and real
+providers, config/Keychain, JSON persistence, the Ask chat shell and the
+embedded mascot. M4 hardening (evals, injection fixtures, performance, release
+dry-run) is an open post-release backlog.
 
 ## LLM provider
 
@@ -162,7 +164,8 @@ public protocol SecretStore: Sendable {
 
 M0–M1 use an in-memory store; M2 adds `FileConversationStore` (Core, injected
 directory, `schemaVersion` 1 + migrator, atomic writes) and the Keychain
-`SecretStore` in `YoChampsMac`.
+`SecretStore` in `YoChampsMac`. When a turn starts, the engine loads the stored
+conversation as context; the V0 transcript is not rehydrated.
 
 ## Provider profiles
 
@@ -266,4 +269,5 @@ public protocol EvalRunner: Sendable {
 }
 ```
 
-M4. Fixtures live with `YoChampsEvals`; fixtures never contain real secrets.
+M4 (open backlog). Fixtures live with `YoChampsEvals`; fixtures never contain
+real secrets.

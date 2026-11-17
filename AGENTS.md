@@ -11,12 +11,15 @@ root of every session.
 | `make bootstrap` | install/verify tools, resolve packages |
 | `make doctor` | versions, paths, config, Keychain, app state |
 | `make build` / `make run` | debug bundle / open it |
+| `make demo` | debug bundle with `MockProvider` and a fixture question |
 | `make test` | Swift Testing suites |
+| `make test-ui` | XCUITest critical flow (needs full Xcode) |
 | `make format` / `make lint` | SwiftFormat / SwiftLint strict |
 | `make secrets` | gitleaks over the working tree |
 | `make mascot-validate` | validate default + local mascot packs |
 | `make verify` | gate: lint, test, build, pack, secrets |
-| `make ci` | exactly what GitHub Actions runs (`verify`) |
+| `make provider-check` | real SSE client against a local stub |
+| `make ci` | exactly what GitHub Actions runs (`verify` + `provider-check`) |
 | `make deploy` | local release install to `~/Applications` and open |
 | `make restart` / `make stop` / `make open` / `make logs` | app lifecycle |
 
@@ -25,19 +28,23 @@ Never claim a gate passed without pasting the command and its output.
 ## Layout
 
 ```
-Package.swift              SwiftPM: Core, Mac app, mascot validator
+Package.swift              SwiftPM: Core, providers, network, Mac app, CLIs
 Sources/YoChampsCore/      pure Foundation domain (no AppKit/SwiftUI)
-Sources/YoChampsMac/       menu bar shell
-Sources/YoChampsMascotValidator/
+Sources/YoChampsProviders/ OpenAI-compatible client, SSE, MockProvider
+Sources/YoChampsNetwork/   URLSession transport
+Sources/YoChampsMac/       menu bar shell, Ask panel/chat, embedded Champ
+Sources/YoChampsMascotValidator/  Sources/YoChampsProviderCheck/
 App/Info.plist             bundle manifest (LSUIElement)
 Resources/Mascots/Default/ Champ asset pack
+UITests/                   XCUITest critical flow
+project.yml                XcodeGen project for the UI tests only
 docs/                      product, delivery, architecture, decisions, security
 scripts/                   bundle, deploy, bootstrap, doctor, secrets, hooks
 ```
 
-The app bundle is assembled by `scripts/bundle.sh`; there is no `.xcodeproj` in
-M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
-`make test-ui` in M1+ (see ADR 0002).
+The app bundle is assembled by `scripts/bundle.sh`; SwiftPM and Command Line
+Tools build the product. The small `.xcodeproj` (from `project.yml`) exists only
+so `make test-ui` can run XCUITest (ADR 0002).
 
 ## Architecture rules
 
@@ -48,6 +55,9 @@ M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
 - Functional core, imperative shell. Async boundaries use `Sendable` DTOs.
 - Semantic states (`CompanionState`) drive animation; the LLM never picks a
   sprite or animation keyword.
+- Champ is embedded in the Ask window; there is no separate mascot window or
+  mascot drag/persisted position. The Ask window itself is movable and its
+  frame is autosaved (ADR 0012).
 - Keep V0 scope: no OCR, transcription, calendar, web search, MCP, RAG, local
   models, telemetry or auto-update. Scope creep is a defect.
 
@@ -65,9 +75,9 @@ M0 because only Command Line Tools are required. Xcode/XCUITest arrive with
 - TDD: failing test first, then implementation. Swift Testing (`@Test`,
   `#expect`) via the `swift-testing` package; `scripts/test.sh` adds the SDK
   libc++ headers that Command Line Tools' stub is missing.
-- Unit tests live in `Tests/YoChampsCoreTests`; executable UI/CLI checks run
-  through `make` targets.
-- Contract tests for the provider live in `YoChampsProviders` from M2.
+- Unit tests live in `Tests/YoChampsCoreTests`, `Tests/YoChampsProvidersTests`
+  and `Tests/YoChampsMacTests`; UI checks run through `make test-ui`.
+- Provider contract tests live in `Tests/YoChampsProvidersTests`.
 - Do not weaken tests or gates to make a milestone look green.
 
 ## Branching and releases (PR to main)

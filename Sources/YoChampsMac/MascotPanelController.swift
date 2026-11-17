@@ -1,11 +1,18 @@
 import AppKit
 
+/// NSImageView returns false for `mouseDownCanMoveWindow`, which would make the
+/// panel's `isMovableByWindowBackground` setting ineffective.
+private final class DraggableImageView: NSImageView {
+    override var mouseDownCanMoveWindow: Bool {
+        true
+    }
+}
+
 /// Hosts the mascot renderer in a floating, borderless window and remembers
 /// where the user dragged it. The panel itself is created once; state changes
 /// only swap the image view's contents through `MascotRenderer.onFrameChange`.
 @MainActor
 final class MascotPanelController: NSObject, NSWindowDelegate {
-    private static let suiteName = "com.yurioliveira.yochamps"
     private static let originKey = "mascotPanelOrigin"
     private static let margin: CGFloat = 24
 
@@ -21,10 +28,12 @@ final class MascotPanelController: NSObject, NSWindowDelegate {
     init(renderer: MascotRenderer, onHide: @escaping () -> Void = {}) {
         self.renderer = renderer
         self.onHide = onHide
-        defaults = UserDefaults(suiteName: Self.suiteName)
+        // Standard is this app's `com.yurioliveira.yochamps` domain. Passing
+        // that bundle ID as a suite name is rejected by Foundation.
+        defaults = UserDefaults.standard
 
         let size = renderer.currentImage?.size ?? renderer.frameDisplaySize
-        let imageView = NSImageView(frame: NSRect(origin: .zero, size: size))
+        let imageView = DraggableImageView(frame: NSRect(origin: .zero, size: size))
         imageView.image = renderer.currentImage
         imageView.imageScaling = .scaleNone
         imageView.imageAlignment = .alignCenter

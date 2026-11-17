@@ -11,7 +11,6 @@ final class YoChampsUITests: XCTestCase {
         static let suite = "com.yurioliveira.yochamps"
         static let originKey = "mascotPanelOrigin"
         static let hotkeyKey = "KeyboardShortcuts_ask"
-        static let statusItem = "Yo Champs"
         static let showHide = "Show/Hide Champ"
     }
 
@@ -140,7 +139,15 @@ final class YoChampsUITests: XCTestCase {
 
     private func launchApp() {
         app.launch()
-        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
+        // LSUIElement runs as an accessory, so it never reports RunningForeground.
+        let deadline = Date().addingTimeInterval(10)
+        while app.state == .notRunning, Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        XCTAssertNotEqual(app.state, .notRunning, "app did not launch")
+        // An inactive accessory app exposes only its menu bar to the AX tree.
+        // Activating it is required before its panels become queryable.
+        app.activate()
     }
 
     private func dismissAsk() {
@@ -151,11 +158,10 @@ final class YoChampsUITests: XCTestCase {
     }
 
     private func clickShowHide() {
-        var statusItem = app.menuBarItems[ID.statusItem]
-        if !statusItem.exists {
-            statusItem = app.menuBars.firstMatch.menuBarItems[ID.statusItem]
-        }
-        XCTAssertTrue(statusItem.waitForExistence(timeout: 10), "Menu bar item not found")
+        // SwiftUI MenuBarExtra is exposed as a StatusItem with an internal AX
+        // title, not as a MenuBarItem named after the app.
+        let statusItem = app.statusItems.firstMatch
+        XCTAssertTrue(statusItem.waitForExistence(timeout: 10), "Status item not found")
         statusItem.click()
 
         let item = app.menuItems[ID.showHide]

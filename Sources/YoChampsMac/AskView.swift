@@ -73,18 +73,23 @@ struct AskView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     ForEach(model.turns) { turn in
-                        Text("USR: \(turn.question)")
-                            .font(.callout)
-                            .fontWeight(.semibold)
-                            .textSelection(.enabled)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        // One view per turn: the id used by scrollTo must
+                        // belong to the whole block, or long answers stream
+                        // below the fold while the question line is pinned.
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("USR: \(turn.question)")
+                                .font(.callout)
+                                .fontWeight(.semibold)
+                                .textSelection(.enabled)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Text(turn.answer.isEmpty ? "RESPONSE: …" : "RESPONSE: \(turn.answer)")
-                            .font(.callout)
-                            .textSelection(.enabled)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(turn.answer.isEmpty ? "RESPONSE: …" : "RESPONSE: \(turn.answer)")
+                                .font(.callout)
+                                .textSelection(.enabled)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                 }
                 .padding(12)

@@ -50,15 +50,15 @@ struct AskView: View {
 
             Spacer()
 
-            Button("New Chat") {
-                model.newChat()
+            if let image = renderer.currentImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 7))
+                    .accessibilityIdentifier("mascotPanel")
+                    .padding(.trailing, 4)
             }
-            .buttonStyle(.link)
-            .disabled(model.isBusy)
-
-            MascotImageView(renderer: renderer, avatarSize: CGSize(width: 36, height: 36))
-                .frame(width: 36, height: 36)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
         }
     }
 

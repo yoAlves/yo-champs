@@ -120,3 +120,42 @@ Run: `make build && make verify` — Expected: exit 0.
 - [ ] **Step 3: Checagem manual (usuário)** — primeira abertura pós-launch com cursor no campo.
 
 - [ ] **Step 4: Commit** (só mediante pedido explícito do usuário)
+
+---
+
+### Task 3: Painel ativo a cada invocação (hotkey)
+
+Report do usuário (com print): painel aparece na frente mas **inativo**
+(titlebar acinzentada) quando invocado pela hotkey com outro app em
+primeiro plano; precisa clicar pra ativar. Causa raiz: app `.accessory`
+inativo; `activate()` simples é recusado pela prevenção de roubo de foco
+do macOS moderno → janela nunca vira key → `becomeKey` (fix da Task 2)
+não tem gatilho. Spec: `docs/superpowers/specs/2026-11-17-panel-activation-design.md`.
+
+**Files:**
+- Modify: `Sources/YoChampsMac/AskPanel.swift` (show() + observer de didBecomeActive + `raisePanelIfVisible()` + deinit)
+
+**Interfaces:**
+- Consumes: `AskPanel.onBecomeKey` → bump do token (Task 2) — inalterado.
+- Produces: nada novo para outras tasks.
+
+- [ ] **Step 1: Forçar ativação em `show()`**
+
+`NSApplication.shared.activate(ignoringOtherApps: true)` no lugar de
+`activate()` (deprecated no macOS 14+, warning benigno aceito).
+
+- [ ] **Step 2: Re-ordenar quando a ativação completar**
+
+Observer de `didBecomeActiveNotification` (block-based, `queue: .main`,
+`MainActor.assumeIsolated`, observer guardado em
+`activationObserver: (any NSObjectProtocol)?` e removido no `deinit`);
+`raisePanelIfVisible()`: se `panel.isVisible && !panel.isKeyWindow`,
+`panel.makeKeyAndOrderFront(nil)`.
+
+- [ ] **Step 3: Build + gate**
+
+Run: `make build && make verify` — Expected: exit 0.
+
+- [ ] **Step 4: Checagem manual (usuário)** — hotkey com terminal/browser em primeiro plano: painel ativo, cursor no campo, sem clique. Cenário extra (S1 da review): com o painel Ask visível e não-key, abrir Settings pelo menu — o campo Ask não deve roubar a digitação da janela de Settings.
+
+- [ ] **Step 5: Commit** (só mediante pedido explícito do usuário)

@@ -52,6 +52,29 @@ struct CompanionEngineTests {
         ])
     }
 
+    @Test("an empty answer emits confused and still completes")
+    func emptyAnswerEmitsConfused() async throws {
+        let store = InMemoryConversationStore()
+        let (engine, _) = makeEngine(.reply([]), store: store)
+
+        let stream = await engine.ask("hello")
+        var events: [CompanionEvent] = []
+        for await event in stream {
+            events.append(event)
+        }
+
+        #expect(events == [
+            .state(.thinking),
+            .state(.confused),
+            .completed,
+        ])
+        let conversation = try await store.load()
+        #expect(conversation.messages == [
+            LLMMessage(role: .user, content: "hello"),
+            LLMMessage(role: .assistant, content: ""),
+        ])
+    }
+
     @Test("the second turn carries the first turn in its request")
     func contextIncludesHistory() async {
         let (engine, recorder) = makeEngine(.reply(["one"]))

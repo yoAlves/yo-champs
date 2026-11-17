@@ -1,3 +1,4 @@
+import KeyboardShortcuts
 import SwiftUI
 
 struct SettingsView: View {
@@ -15,7 +16,19 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
+            if let mascotStatus = model.mascotStatus {
+                Text(mascotStatus)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
+            }
+
             Form {
+                HStack {
+                    Text("Ask hotkey")
+                    Spacer()
+                    KeyboardShortcuts.Recorder(for: .ask)
+                }
                 TextField("Base URL (https://…/v1)", text: $model.baseURL)
                 TextField("Model", text: $model.model)
                 SecureField("API key (stored in Keychain)", text: $model.apiKey)

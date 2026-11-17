@@ -1,5 +1,56 @@
 # Status
 
+## M3 — Character
+
+**State:** complete — local gate, PR CI and whole-branch review green; ready to merge.
+**Date:** 2026-11-17.
+**Branch:** `feature/m3-character` (PR [#7](https://github.com/yoAlves/yo-champs/pull/7); no merge performed by the gate task).
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0: SwiftFormat 0/62 files need formatting, SwiftLint 0 violations in 59 files, 119 tests / 18 suites (50 provider + 69 core), app + validator builds, 1 pack, gitleaks no leaks (~726 KB) |
+| `make mascot-validate` | pass | exit 0; `ok .../Resources/Mascots/Default`, `validated 1 pack(s)` |
+| `make test-ui` | pass | exit 0; `** TEST SUCCEEDED **` — 4 XCUITest cases, 0 failures (hotkey → Ask, Esc, show/hide, drag + relaunch) |
+| `make deploy` | pass | exit 0; installed `~/Applications/YoChamps.app` (unsigned local build) |
+| `make restart` | pass | exit 0; `stop` + `open`, installed app reopened |
+| `core (linux)` (CI) | pass | PR #7 required check green, ~1m on `macos-15-intel` runner set |
+| `app + gates (macos)` (CI) | pass | PR #7 required check green, ~4–5m |
+| Whole-branch review | pass | 0 critical / 1 important (fixed); scoped re-review clean, no new breakage |
+
+### Evidence
+
+- Full chain `make verify && make mascot-validate && make test-ui && make deploy && make restart` run on 2026-11-17: all five commands exit 0 (`CHAIN_EXIT=0`), each with short-circuit `&&` semantics and per-command exit codes captured.
+- `make verify` (exit 0):
+  - `0/62 files require formatting, 36 files skipped.`
+  - `Done linting! Found 0 violations, 0 serious in 59 files.`
+  - `✔ Test run with 50 tests in 5 suites passed after 0.110 seconds.` (provider)
+  - `✔ Test run with 69 tests in 13 suites passed after 0.010 seconds.` (core) — 119 Swift Testing tests total.
+  - `Build complete!` for the app bundle and the mascot validator.
+  - `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`
+  - `no leaks found` (~726324 bytes / 726.32 KB scanned).
+- `make mascot-validate` (exit 0): `ok .../Resources/Mascots/Default`, `validated 1 pack(s)`.
+- `make test-ui` (exit 0): xcodebuild `test -project YoChamps.xcodeproj -scheme YoChampsUITests -destination platform=macOS`; four cases, all passed:
+  - `testHotkeyOpensAsk` passed (6.300 s) — ⌘⌥Y reopens Ask after Esc.
+  - `testEscapeClosesAsk` passed (3.949 s).
+  - `testShowHideKeepsProcessAlive` passed (13.774 s).
+  - `testDragThenRelaunchRestoresPosition` passed (8.624 s).
+  - `Executed 4 tests, with 0 failures (0 unexpected) in 32.647 (32.652) seconds`; `** TEST SUCCEEDED **`; xcresult `Test-YoChampsUITests-2026.11.17_00-02-35--0300.xcresult`.
+- `make deploy` (exit 0): `stopped YoChamps (if it was running)`, `installed: /Users/yurioliveiraalves/Applications/YoChamps.app`, `note: local build only — unsigned, not notarized, not published`.
+- `make restart` (exit 0): `stopped YoChamps (if it was running)`; the `open` prerequisite relaunches the installed app.
+
+- PR CI: `core (linux)` and `app + gates (macos)` both green on the PR head. No run id or head hash is pinned here — the branch head moves with evidence commits, so pinning would drift (the M2 pattern).
+- Whole-branch review over `18ebded..218967e`: 0 critical, 1 important — an unreadable local-pack directory could drop Champ and misreport the cause. Fixed in `11fd196`; scoped re-review `218967e..11fd196` verdict: all findings ADDRESSED, no new Critical/Important breakage.
+- Post-review CI compatibility commits: `9818165` (`redundantSelf` flag difference between local and CI SwiftFormat) and `ef83da9` (`isolated deinit` unsupported by CI's Swift 6.2–6.3). `make verify` remained exit 0 (119 tests) after both; CI went green on `ef83da9`.
+
+### Gaps and risks
+
+- No hash is pinned in the gate rows above: pinning the evidence commit would drift as the branch head moves (the M2 pattern).
+- No real-endpoint Q&A in this gate: UI tests launch with `--demo` (MockProvider), so no personal Keychain key is used.
+- The `.unreadable` local-pack fallback path has no automated Mac-side unit test (no Mac unit-test target); covered by the scoped review, not by a test.
+- Deferred non-blocking review minors: PIF warning noise; whitespace-only `confused` test; `max(0,…)` clamp inconsistency; selector dead fallback; two Task 5 message/styling details; same-state frame replay and origin-persist-on-show; duplicate `mascotPanel` identifier; two status wording nits.
+
 ## M2 — Real providers
 
 **State:** complete — merged to `main` via PR [#5](https://github.com/yoAlves/yo-champs/pull/5) (merge commit `1dc305c`).

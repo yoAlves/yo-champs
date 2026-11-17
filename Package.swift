@@ -28,7 +28,12 @@ var targets: [Target] = [
         ),
         .executableTarget(
             name: "YoChampsMac",
-            dependencies: ["YoChampsCore", "YoChampsProviders", "YoChampsNetwork"]
+            dependencies: [
+                "YoChampsCore",
+                "YoChampsProviders",
+                "YoChampsNetwork",
+                .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
+            ]
         ),
         .executableTarget(name: "YoChampsMascotValidator", dependencies: ["YoChampsCore"]),
         .executableTarget(
@@ -70,6 +75,9 @@ let package = Package(
         // Command Line Tools do not ship. 6.2.4 has no such link and still
         // integrates with SwiftPM's native test runner.
         .package(url: "https://github.com/swiftlang/swift-testing.git", exact: "6.2.4"),
+        // Latest 1.x: swift-tools 5.9 and macOS 10.13 minimum, both below this
+        // package's Swift 6.0 tools version and macOS 14 deployment target.
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts.git", exact: "1.17.0"),
     ],
     targets: targets
 )

@@ -1,0 +1,73 @@
+# Xcode project used only by the XCUITest gate (`make test-ui`).
+#
+# The SwiftPM package stays the source of truth for the product. This project
+# compiles the existing Mac sources into a launchable .app for the test runner
+# and links the package's library products; no source files are copied.
+name: YoChamps
+
+options:
+  bundleIdPrefix: com.yurioliveira
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+
+packages:
+  YoChampsPackage:
+    path: .
+  KeyboardShortcuts:
+    url: https://github.com/sindresorhus/KeyboardShortcuts.git
+    exactVersion: 1.17.0
+
+targets:
+  YoChamps:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/YoChampsMac
+      - path: Resources/Mascots
+        type: folder
+    dependencies:
+      - package: YoChampsPackage
+        product: YoChampsCore
+      - package: YoChampsPackage
+        product: YoChampsProviders
+      - package: YoChampsPackage
+        product: YoChampsNetwork
+      - package: KeyboardShortcuts
+        product: KeyboardShortcuts
+    settings:
+      base:
+        PRODUCT_NAME: YoChamps
+        PRODUCT_BUNDLE_IDENTIFIER: com.yurioliveira.yochamps
+        INFOPLIST_FILE: App/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+
+  YoChampsUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: YoChamps
+    settings:
+      base:
+        PRODUCT_NAME: YoChampsUITests
+        PRODUCT_BUNDLE_IDENTIFIER: com.yurioliveira.yochamps.UITests
+        TEST_TARGET_NAME: YoChamps
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+
+schemes:
+  YoChampsUITests:
+    build:
+      targets:
+        YoChamps: all
+        YoChampsUITests: all
+    test:
+      targets:
+        - YoChampsUITests

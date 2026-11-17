@@ -1,9 +1,16 @@
 import AppKit
+import Combine
+import KeyboardShortcuts
 import OSLog
 import SwiftUI
 import YoChampsCore
 import YoChampsNetwork
 import YoChampsProviders
+
+/// Name registration touches UserDefaults and AppKit state: main actor only.
+@MainActor extension KeyboardShortcuts.Name {
+    static let ask = Self("ask", default: .init(.y, modifiers: [.command, .option]))
+}
 
 /// M2 shell: menu bar item, floating ask panel, real provider conversation,
 /// settings/onboarding and JSON history. The character renderer arrives in M3.
@@ -20,8 +27,9 @@ struct YoChampsApp: App {
             Button("Ask…") {
                 appDelegate.showPanel()
             }
-            Button("Show Champ (M3)") {}
-                .disabled(true)
+            Button("Show/Hide Champ") {
+                appDelegate.toggleMascot()
+            }
             Button("Settings…") {
                 appDelegate.showSettings()
             }
@@ -51,6 +59,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let logger = Logger(subsystem: "com.yurioliveira.yochamps", category: "app")
     private var panelController: AskPanelController?
     private var settingsController: SettingsPanelController?
+    private var mascotController: MascotPanelController?
+    private var mascotRenderer: MascotRenderer?
+    private var mascotStateCancellable: AnyCancellable?
     private var engineBox: EngineBox?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -63,9 +74,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let box = EngineBox(engine: Self.makeEngine())
         engineBox = box
+        let model = CompanionViewModel(engineProvider: { box.engine })
         panelController = AskPanelController(
-            model: CompanionViewModel(engineProvider: { box.engine })
+            model: model,
+            anchorProvider: { [weak self] in self?.mascotController?.frame }
         )
+        setupMascot(model: model)
+
+        // The hotkey opens the Ask bubble through the same path as the menu
+        // item, so Esc dismissal and mascot anchoring behave identically.
+        KeyboardShortcuts.onKeyDown(for: .ask) { [weak self] in
+            Task { @MainActor in
+                self?.showPanel()
+            }
+        }
 
         let configStore = ProviderConfigFileStore()
         settingsController = SettingsPanelController(
@@ -118,6 +140,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showSettings() {
         settingsController?.show()
+    }
+
+    func toggleMascot() {
+        mascotController?.toggle()
+    }
+
+    /// A missing or invalid pack leaves Champ hidden; the rest of the app keeps
+    /// working and Settings reports why the default pack was not loaded.
+    private func setupMascot(model: CompanionViewModel) {
+        do {
+            let pack: MascotPack
+            switch try MascotPackLoader().load() {
+            case let .selected(selected):
+                pack = selected
+            case let .fallback(fallback, message):
+                if !message.isEmpty {
+                    logger.info("using default mascot: \(message, privacy: .private)")
+                }
+                pack = fallback
+            }
+            let renderer = MascotRenderer(pack: pack)
+            mascotRenderer = renderer
+            let controller = MascotPanelController(renderer: renderer) {
+                // Every hide path — menu or ⌘W — abandons the turn.
+                model.stop()
+            }
+            mascotController = controller
+
+            renderer.setState(model.state)
+            mascotStateCancellable = model.$state.sink { [weak self] state in
+                Task { @MainActor in
+                    self?.mascotRenderer?.setState(state)
+                }
+            }
+
+            controller.show()
+        } catch {
+            logger.error("mascot panel unavailable: \(String(describing: error), privacy: .private)")
+        }
     }
 
     /// Settings saved a profile: the next ask must use it, not the engine that

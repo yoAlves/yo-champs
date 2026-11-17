@@ -16,6 +16,7 @@ until the public contract stabilizes.
 - M2: versioned provider profiles and config with Keychain-backed secrets.
 - M2: OpenAI-compatible streaming client, SSE parser, typed errors and retries.
 - M2: Settings/onboarding, JSON conversation history and a local provider check.
+- M3: animated Champ mascot panel with drag/persistence, global hotkey, menu show/hide and XCUITest.
 
 ## [0.0.0-m0] - 2026-11-16
 

@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import YoChampsCore
 import YoChampsProviders
 
@@ -55,11 +56,14 @@ final class SettingsViewModel: ObservableObject {
     @Published var isOnboarding = false
     @Published var isWorking = false
     @Published var message: SettingsMessage?
+    @Published var mascotStatus: String?
 
     private let store: ProviderConfigFileStore
     private let secrets: any SecretStore
     private let transport: any LLMHTTPTransport
+    private let packLoader: MascotPackLoader
     private let onSaved: () -> Void
+    private let logger = Logger(subsystem: "com.yurioliveira.yochamps", category: "settings")
     private var profileID: String?
     private var work: Task<Void, Never>?
 
@@ -67,15 +71,18 @@ final class SettingsViewModel: ObservableObject {
         store: ProviderConfigFileStore,
         secrets: any SecretStore,
         transport: any LLMHTTPTransport,
+        packLoader: MascotPackLoader = MascotPackLoader(),
         onSaved: @escaping () -> Void = {}
     ) {
         self.store = store
         self.secrets = secrets
         self.transport = transport
+        self.packLoader = packLoader
         self.onSaved = onSaved
     }
 
     func load() async {
+        loadMascotStatus()
         do {
             guard let registry = try await store.load() else {
                 isOnboarding = true
@@ -91,6 +98,22 @@ final class SettingsViewModel: ObservableObject {
             isOnboarding = false
         } catch {
             message = .error(Self.display(error))
+        }
+    }
+
+    /// Reports only why a fallback happened; loading itself stays silent when
+    /// a single local pack (or none) is in use.
+    private func loadMascotStatus() {
+        do {
+            switch try packLoader.load() {
+            case .selected:
+                mascotStatus = nil
+            case let .fallback(_, detail):
+                mascotStatus = detail.isEmpty ? nil : detail
+            }
+        } catch {
+            logger.error("mascot pack load failed: \(String(describing: error), privacy: .private)")
+            mascotStatus = "The default mascot pack could not be loaded."
         }
     }
 

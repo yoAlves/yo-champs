@@ -21,19 +21,19 @@ Packs live in:
   "schemaVersion": 1,
   "id": "champ",
   "name": "Champ",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Yo Champs",
   "license": "CC-BY-4.0",
   "frameSize": { "width": 64, "height": 64 },
   "scale": 2.0,
   "anchor": { "x": 0.5, "y": 1.0 },
   "animations": {
-    "idle":     { "frames": 1, "fps": 8, "loop": true },
-    "thinking": { "frames": 1, "fps": 8, "loop": true },
-    "talking":  { "frames": 1, "fps": 8, "loop": true },
-    "happy":    { "frames": 1, "fps": 8, "loop": false },
-    "confused": { "frames": 1, "fps": 8, "loop": false },
-    "error":    { "frames": 1, "fps": 8, "loop": false }
+    "idle":     { "frames": 1, "fps": 6, "loop": true },
+    "thinking": { "frames": 2, "fps": 6, "loop": true },
+    "talking":  { "frames": 3, "fps": 8, "loop": true },
+    "happy":    { "frames": 2, "fps": 8, "loop": false },
+    "confused": { "frames": 2, "fps": 8, "loop": false },
+    "error":    { "frames": 2, "fps": 8, "loop": false }
   }
 }
 ```

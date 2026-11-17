@@ -8,6 +8,16 @@ import YoChampsCore
 /// The renderer owns every timing decision: one timer per animated state,
 /// none for a single-frame resting state, and none while hidden. It never
 /// touches AppKit windows — the panel controller hosts `currentImage`.
+/// Owns the repeating timer so a plain `deinit` can invalidate it. An
+/// `isolated deinit` would require a newer Swift frontend than CI provides.
+private final class TimerOwner {
+    var timer: Timer?
+
+    deinit {
+        timer?.invalidate()
+    }
+}
+
 @MainActor
 final class MascotRenderer {
     private let sequence: MascotFrameSequence
@@ -19,7 +29,7 @@ final class MascotRenderer {
     private var isHidden = false
     private var frameIndices: [Int] = []
     private var framePosition = 0
-    private var timer: Timer?
+    private let timerOwner = TimerOwner()
     private var image: NSImage?
 
     /// Frame size in points after applying the manifest scale.
@@ -44,10 +54,6 @@ final class MascotRenderer {
         scale = CGFloat(pack.manifest.scale)
         sheet = Self.loadSheet(from: pack.spritesheetURL)
         rebuildAnimation()
-    }
-
-    isolated deinit {
-        timer?.invalidate()
     }
 
     func setState(_ newState: CompanionState) {
@@ -81,7 +87,7 @@ final class MascotRenderer {
     /// A timer exists only for a multi-frame animation while visible. A
     /// one-frame idle state deliberately has no repeating work.
     private func startTimer() {
-        guard !isHidden, frameIndices.count > 1, timer == nil else { return }
+        guard !isHidden, frameIndices.count > 1, timerOwner.timer == nil else { return }
         let fps = sequence.fps(for: state)
         guard fps > 0, fps.isFinite else { return }
         let timer = Timer(
@@ -94,12 +100,12 @@ final class MascotRenderer {
             }
         }
         RunLoop.main.add(timer, forMode: .common)
-        self.timer = timer
+        timerOwner.timer = timer
     }
 
     private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
+        timerOwner.timer?.invalidate()
+        timerOwner.timer = nil
     }
 
     private func advance() {

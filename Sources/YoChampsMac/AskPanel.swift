@@ -71,7 +71,7 @@ final class AskPanelController {
 
         panel = AskPanel(
             contentRect: NSRect(x: 0, y: 0, width: 380, height: 300),
-            styleMask: [.titled, .closable, .fullSizeContentView],
+            styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
@@ -90,6 +90,14 @@ final class AskPanelController {
         // Kept alive by the controller: NSWindow.delegate is weak.
         panel.delegate = closeHandler
 
+        // Resizable with the persisted frame as the lower bound: the request
+        // is to grow the panel, not to shrink it below today's default.
+        panel.contentMinSize = NSSize(width: 380, height: 300)
+        // AppKit saves the frame (size and position) on every move/resize and
+        // restores it here, across launches; `show()` only re-centers when the
+        // saved frame is not on any connected screen.
+        panel.setFrameAutosaveName("AskPanel")
+
         let hidePanel: () -> Void = { [weak self] in
             self?.hide()
         }
@@ -107,7 +115,6 @@ final class AskPanelController {
         panel.onBecomeKey = { [weak self] in
             self?.panelState.showToken += 1
         }
-        panel.center()
 
         // Activation refused at summon time (accessory app, macOS focus-steal
         // prevention) can complete a beat later; the key request made in
@@ -129,7 +136,11 @@ final class AskPanelController {
         // macOS focus-steal prevention; this variant is the supported path
         // for menu-bar apps summoned by hotkey (deprecated but functional).
         NSApplication.shared.activate(ignoringOtherApps: true)
-        panel.center()
+        // The restored frame can live on a screen that is no longer connected;
+        // re-center once so the panel is never summoned off-screen.
+        if !NSScreen.screens.contains(where: { $0.visibleFrame.intersects(panel.frame) }) {
+            panel.center()
+        }
         renderer.setHidden(false)
         panel.makeKeyAndOrderFront(nil)
         panelState.showToken += 1

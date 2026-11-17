@@ -18,6 +18,7 @@ until the public contract stabilizes.
 - M2: Settings/onboarding, JSON conversation history and a local provider check.
 - M3: animated Champ mascot panel with drag/persistence, global hotkey, menu show/hide and XCUITest.
 - Embed Champ in the Ask window; remove the floating panel, drag and position persistence; Show/Hide now toggles Ask.
+- Resizable Ask panel: the window frame (size and position) persists across launches via `frameAutosaveName`.
 
 ### Changed
 

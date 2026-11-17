@@ -9,13 +9,13 @@ final class YoChampsUITests: XCTestCase {
         static let askSend = "askSendButton"
         static let mascotWindow = "mascotPanel"
         static let suite = "com.yurioliveira.yochamps"
-        static let originKey = "mascotPanelOrigin"
         static let hotkeyKey = "KeyboardShortcuts_ask"
         static let showHide = "Show/Hide Champ"
+        static let demoQuestion = "What can you do?"
+        static let demoAnswerSuffix = "streamed one word at a time"
     }
 
     private struct SavedDefaults {
-        let origin: Any?
         let hotkey: Any?
     }
 
@@ -26,14 +26,10 @@ final class YoChampsUITests: XCTestCase {
         super.setUp()
         continueAfterFailure = false
 
-        // Both keys live in the app's preference domain. Snapshot the user's
-        // values so the tests are repeatable without destroying customizations.
+        // The hotkey key lives in the app's preference domain. Snapshot the
+        // user's value so the tests are repeatable without destroying it.
         if let defaults = UserDefaults(suiteName: ID.suite) {
-            savedDefaults = SavedDefaults(
-                origin: defaults.object(forKey: ID.originKey),
-                hotkey: defaults.object(forKey: ID.hotkeyKey)
-            )
-            defaults.removeObject(forKey: ID.originKey)
+            savedDefaults = SavedDefaults(hotkey: defaults.object(forKey: ID.hotkeyKey))
             defaults.removeObject(forKey: ID.hotkeyKey)
             CFPreferencesAppSynchronize(ID.suite as CFString)
         }
@@ -45,7 +41,6 @@ final class YoChampsUITests: XCTestCase {
     override func tearDown() {
         app?.terminate()
         if let defaults = UserDefaults(suiteName: ID.suite), let savedDefaults {
-            restore(savedDefaults.origin, forKey: ID.originKey, in: defaults)
             restore(savedDefaults.hotkey, forKey: ID.hotkeyKey, in: defaults)
             CFPreferencesAppSynchronize(ID.suite as CFString)
         }
@@ -84,12 +79,12 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(isAppRunning())
     }
 
-    /// Show/Hide toggles Champ's window while the process keeps running.
+    /// The mascot is embedded in the Ask window, so Show/Hide toggles that
+    /// window (and the image inside it) while the process keeps running.
     func testShowHideKeepsProcessAlive() {
         launchApp()
-        dismissAsk()
 
-        let mascot = app.windows[ID.mascotWindow]
+        let mascot = app.images[ID.mascotWindow]
         XCTAssertTrue(mascot.waitForExistence(timeout: 10))
         XCTAssertTrue(isAppRunning())
 
@@ -102,37 +97,46 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertTrue(isAppRunning())
     }
 
-    /// Dragging persists the origin; a fresh process restores it.
-    func testDragThenRelaunchRestoresPosition() {
+    /// The mascot is embedded beside the answer in the Ask window. A long
+    /// reply must not overlap it, and its box keeps the renderer's fixed
+    /// display size (64pt frame * 2x scale = 128pt for the default pack).
+    func testEmbeddedMascotDoesNotOverlapLongAnswer() {
         launchApp()
-        dismissAsk()
 
-        let mascot = app.windows[ID.mascotWindow]
+        let mascot = app.images[ID.mascotWindow]
         XCTAssertTrue(mascot.waitForExistence(timeout: 10))
 
-        let initial = mascot.frame.origin
-        let start = mascot.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        let end = start.withOffset(CGVector(dx: -180, dy: 90))
-        start.press(forDuration: 0.2, thenDragTo: end)
+        // `--demo` pre-asks the fixture question through showDemo(); wait for
+        // that stream to settle so the field is enabled before typing again.
+        XCTAssertNotNil(waitForAnswer(timeout: 15), "demo answer did not appear")
+        // "Cancel" is present only while a turn is busy; wait for it to go so
+        // the field and send button are enabled for the next question.
+        XCTAssertTrue(app.buttons["Cancel"].waitForNonExistence(timeout: 10), "demo stream did not settle")
 
-        var dragged = mascot.frame.origin
-        for _ in 0 ..< 20
-            where abs(dragged.x - initial.x) < 20 && abs(dragged.y - initial.y) < 20
-        {
-            Thread.sleep(forTimeInterval: 0.1)
-            dragged = mascot.frame.origin
+        let field = app.textFields[ID.askField]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.click()
+        field.typeText(ID.demoQuestion)
+        app.buttons[ID.askSend].click()
+
+        // The send resets the answer; wait for that before waiting for the
+        // reply so the captured element is the freshly streamed one.
+        let clearedDeadline = Date().addingTimeInterval(5)
+        while Date() < clearedDeadline, currentAnswer() != nil {
+            Thread.sleep(forTimeInterval: 0.05)
         }
-        XCTAssertNotEqual(dragged, initial, "Drag did not move Champ")
 
-        app.terminate()
-        XCTAssertTrue(app.wait(for: .notRunning, timeout: 10))
+        guard let answer = waitForAnswer(timeout: 15) else {
+            XCTFail("long answer did not appear")
+            return
+        }
 
-        launchApp()
-        let restored = app.windows[ID.mascotWindow]
-        XCTAssertTrue(restored.waitForExistence(timeout: 10))
-        let origin = restored.frame.origin
-        XCTAssertEqual(origin.x, dragged.x, accuracy: 2)
-        XCTAssertEqual(origin.y, dragged.y, accuracy: 2)
+        let mascotFrame = mascot.frame
+        let answerFrame = answer.frame
+        XCTAssertFalse(mascotFrame.intersects(answerFrame), "mascot overlaps the answer text")
+        // AX reports the NSImageView 2pt wider than the 128pt renderer size
+        // (1pt per side); allow that measurement slack but never a shrink.
+        XCTAssertEqual(mascotFrame.width, 128, accuracy: 2, "mascot box shrank below 128pt")
     }
 
     // MARK: - Helpers
@@ -148,6 +152,25 @@ final class YoChampsUITests: XCTestCase {
         // An inactive accessory app exposes only its menu bar to the AX tree.
         // Activating it is required before its panels become queryable.
         app.activate()
+    }
+
+    /// SwiftUI exposes `Text` through the AX `value`; XCUITest predicates on
+    /// `value` are unreliable here, so poll resolved elements directly.
+    private func currentAnswer() -> XCUIElement? {
+        app.staticTexts.allElementsBoundByIndex.first {
+            ($0.value as? String)?.contains(ID.demoAnswerSuffix) == true
+        }
+    }
+
+    private func waitForAnswer(timeout: TimeInterval) -> XCUIElement? {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if let answer = currentAnswer() {
+                return answer
+            }
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        return nil
     }
 
     private func dismissAsk() {

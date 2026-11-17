@@ -62,7 +62,7 @@ final class SettingsViewModel: ObservableObject {
     private let secrets: any SecretStore
     private let transport: any LLMHTTPTransport
     private let packLoader: MascotPackLoader
-    private let onSaved: () -> Void
+    var onSaved: () -> Void
     private let logger = Logger(subsystem: "com.yurioliveira.yochamps", category: "settings")
     private var profileID: String?
     private var work: Task<Void, Never>?
@@ -210,7 +210,7 @@ final class SettingsViewModel: ObservableObject {
             let request = try LLMRequest(
                 model: validatedModel(),
                 messages: [.init(role: .user, content: "Reply with OK")],
-                maxTokens: 16,
+                maxTokens: 256,
                 headers: requestHeaders
             )
             var answer = ""
@@ -220,7 +220,8 @@ final class SettingsViewModel: ObservableObject {
                     answer += delta
                 }
             }
-            apiKey = ""
+            // Keep the typed key visible until Save or close: clearing it here
+            // makes it look lost and silently discards a newly entered key.
             message = .info(answer.isEmpty ? "Connected but the provider sent no text" : "Connection OK")
         } catch is CancellationError {
             message = .info("Cancelled")
@@ -235,6 +236,7 @@ final class SettingsViewModel: ObservableObject {
         work?.cancel()
         work = nil
         isWorking = false
+        apiKey = ""
     }
 
     private func storedKey(for reference: String) async throws -> Bool {

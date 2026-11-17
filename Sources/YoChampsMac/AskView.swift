@@ -3,6 +3,7 @@ import SwiftUI
 struct AskView: View {
     @ObservedObject var model: CompanionViewModel
     let onClose: () -> Void
+    let renderer: MascotRenderer
 
     @FocusState private var isFocused: Bool
 
@@ -38,13 +39,25 @@ struct AskView: View {
 
             Divider()
 
-            ScrollView {
-                Text(model.answer.isEmpty ? placeholder : model.answer)
-                    .foregroundStyle(model.answer.isEmpty ? .secondary : .primary)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(alignment: .top, spacing: 16) {
+                ScrollView {
+                    Text(model.answer.isEmpty ? placeholder : model.answer)
+                        .foregroundStyle(model.answer.isEmpty ? .secondary : .primary)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: .infinity)
+                .layoutPriority(0)
+
+                MascotImageView(renderer: renderer)
+                    .frame(
+                        width: renderer.frameDisplaySize.width,
+                        height: renderer.frameDisplaySize.height
+                    )
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+                    .layoutPriority(1)
             }
-            .frame(maxHeight: .infinity)
 
             if let message = model.errorMessage {
                 Text(message)
@@ -66,7 +79,7 @@ struct AskView: View {
             }
         }
         .padding(16)
-        .frame(minWidth: 360, minHeight: 260)
+        .frame(minWidth: 520, minHeight: 260)
         .onAppear {
             isFocused = true
         }

@@ -2,7 +2,8 @@ import AppKit
 import SwiftUI
 
 /// Floating ask panel. Borderless-ish chrome keeps it close to the final
-/// bubble; placement, translucency and the mascot anchor arrive in M3.
+/// bubble; placement and translucency arrive in M3. Champ is embedded in the
+/// hosted `AskView`, not anchored to a separate window.
 final class AskPanel: NSPanel {
     var onEscape: (() -> Void)?
 
@@ -34,16 +35,14 @@ final class PanelCloseHandler: NSObject, NSWindowDelegate {
 
 @MainActor
 final class AskPanelController {
-    private static let gap: CGFloat = 12
-
     private let panel: AskPanel
     private let model: CompanionViewModel
     private let closeHandler: PanelCloseHandler
-    private let anchorProvider: () -> NSRect?
+    private let renderer: MascotRenderer
 
-    init(model: CompanionViewModel, anchorProvider: @escaping () -> NSRect?) {
+    init(model: CompanionViewModel, renderer: MascotRenderer) {
         self.model = model
-        self.anchorProvider = anchorProvider
+        self.renderer = renderer
         closeHandler = PanelCloseHandler { model.stop() }
 
         panel = AskPanel(
@@ -60,6 +59,9 @@ final class AskPanelController {
         panel.isMovableByWindowBackground = true
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        // NSPanel defaults to true; a summoned panel must stay on screen while
+        // the app is inactive (activation lands a beat after the hotkey).
+        panel.hidesOnDeactivate = false
 
         // Kept alive by the controller: NSWindow.delegate is weak.
         panel.delegate = closeHandler
@@ -67,34 +69,24 @@ final class AskPanelController {
         let hidePanel: () -> Void = { [weak self] in
             self?.hide()
         }
-        panel.contentView = NSHostingView(rootView: AskView(model: model, onClose: hidePanel))
+        panel.contentView = NSHostingView(rootView: AskView(model: model, onClose: hidePanel, renderer: renderer))
         panel.onEscape = hidePanel
         panel.center()
     }
 
     func show() {
         NSApplication.shared.activate()
-        positionNearMascot()
+        panel.center()
+        renderer.setHidden(false)
         panel.makeKeyAndOrderFront(nil)
     }
 
-    /// Open beside Champ's trailing edge, vertically centred on the screen the
-    /// mascot occupies. A nil anchor keeps the bubble in its centred position.
-    private func positionNearMascot() {
-        guard let anchor = anchorProvider() else {
-            panel.center()
-            return
+    func toggle() {
+        if panel.isVisible {
+            hide()
+        } else {
+            show()
         }
-        let screen = NSScreen.screens.first { $0.frame.intersects(anchor) } ?? NSScreen.main
-        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1024, height: 768)
-        let size = panel.frame.size
-        let maxX = visible.maxX - min(size.width, visible.width)
-        let maxY = visible.maxY - min(size.height, visible.height)
-        let origin = NSPoint(
-            x: min(max(anchor.maxX + Self.gap, visible.minX), maxX),
-            y: min(max(anchor.midY - size.height / 2, visible.minY), maxY)
-        )
-        panel.setFrameOrigin(origin)
     }
 
     /// `make demo`: open the panel with a fixture question, streamed slowly
@@ -106,6 +98,7 @@ final class AskPanelController {
 
     private func hide() {
         model.stop()
+        renderer.setHidden(true)
         panel.orderOut(nil)
     }
 }

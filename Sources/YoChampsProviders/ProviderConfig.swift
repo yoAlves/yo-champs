@@ -45,6 +45,28 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
     }
 }
 
+/// The single transport rule for every base URL: https anywhere, http only
+/// for a provider running on this machine. The config loader and the Settings
+/// "Test connection" path both go through here, so a key-bearing request can
+/// never be sent in cleartext to a remote host.
+public enum ProviderTransportPolicy {
+    public static func isLoopback(host: String) -> Bool {
+        var normalized = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.hasPrefix("["), normalized.hasSuffix("]") {
+            normalized = String(normalized.dropFirst().dropLast())
+        }
+        return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1"
+    }
+
+    public static func requireSecure(_ url: URL, profileID: String) throws {
+        guard url.scheme?.lowercased() == "http" else { return }
+        let host = url.host ?? ""
+        guard isLoopback(host: host) else {
+            throw ProviderConfigError.insecureBaseURL(profileID: profileID, host: host)
+        }
+    }
+}
+
 /// One set of field-level invariants shared by the decoder, the registry
 /// constructor and the encoder, so no write path can persist a profile the
 /// loader would reject (or a secret hidden in a header).
@@ -60,13 +82,11 @@ private enum ProviderProfileValidation {
         }
         guard let scheme = profile.baseURL.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
-              let host = profile.baseURL.host, !host.isEmpty
+              profile.baseURL.host?.isEmpty == false
         else {
             throw ProviderConfigError.invalidBaseURL(profileID: profile.id)
         }
-        if scheme == "http", !isLoopbackHost(host) {
-            throw ProviderConfigError.insecureBaseURL(profileID: profile.id, host: host)
-        }
+        try ProviderTransportPolicy.requireSecure(profile.baseURL, profileID: profile.id)
         try validateSecretRef(profile.secretRef, profileID: profile.id)
         for (name, value) in profile.headers {
             let normalizedValue = value.trimmingCharacters(in: .whitespaces).lowercased()
@@ -78,14 +98,6 @@ private enum ProviderProfileValidation {
                 throw ProviderConfigError.credentialHeader(name)
             }
         }
-    }
-
-    private static func isLoopbackHost(_ host: String) -> Bool {
-        var normalized = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        if normalized.hasPrefix("["), normalized.hasSuffix("]") {
-            normalized = String(normalized.dropFirst().dropLast())
-        }
-        return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1"
     }
 
     private static func validateSecretRef(_ ref: String, profileID: String) throws {

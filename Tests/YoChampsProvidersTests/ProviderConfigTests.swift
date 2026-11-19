@@ -280,3 +280,51 @@ struct ProviderConfigTests {
         }
     }
 }
+
+@Suite("Provider transport policy")
+struct ProviderTransportPolicyTests {
+    private func target(_ string: String) throws -> URL {
+        try #require(URL(string: string))
+    }
+
+    @Test("accepts https on any host")
+    func acceptsHTTPS() throws {
+        try ProviderTransportPolicy.requireSecure(
+            target("https://example.com/v1"),
+            profileID: "personal"
+        )
+    }
+
+    @Test("rejects http outside loopback")
+    func rejectsRemoteHTTP() throws {
+        #expect {
+            try ProviderTransportPolicy.requireSecure(
+                target("http://example.com/v1"),
+                profileID: "personal"
+            )
+        } throws: { error in
+            error as? ProviderConfigError == .insecureBaseURL(profileID: "personal", host: "example.com")
+        }
+    }
+
+    @Test("accepts http on loopback hosts")
+    func acceptsLoopbackHTTP() throws {
+        for baseURL in [
+            "http://localhost:11434/v1",
+            "http://127.0.0.1:11434/v1",
+            "http://[::1]:11434/v1",
+        ] {
+            try ProviderTransportPolicy.requireSecure(target(baseURL), profileID: "personal")
+        }
+    }
+
+    @Test("normalizes loopback hosts across whitespace, case and brackets")
+    func loopbackNormalization() {
+        for host in ["localhost", " LocalHost ", "127.0.0.1", "::1", "[::1]", "[::1] "] {
+            #expect(ProviderTransportPolicy.isLoopback(host: host), "expected \(host) to be loopback")
+        }
+        for host in ["example.com", "10.0.0.1", "127.0.0.2", "", "::2"] {
+            #expect(!ProviderTransportPolicy.isLoopback(host: host), "expected \(host) not to be loopback")
+        }
+    }
+}

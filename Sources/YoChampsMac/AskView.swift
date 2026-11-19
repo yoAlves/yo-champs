@@ -24,15 +24,19 @@ struct AskView: View {
                     .textSelection(.enabled)
             }
 
-            inputRow
+            VStack(spacing: 2) {
+                inputRow
 
-            Text("Champ is an AI and can make mistakes.")
-                .font(.caption2)
-                .foregroundStyle(.tertiary.opacity(0.6))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .accessibilityIdentifier("disclaimerText")
+                Text("Champ is an AI and can make mistakes")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.tertiary.opacity(0.6))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .accessibilityIdentifier("disclaimerText")
+            }
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 2)
         .frame(minWidth: 380, minHeight: 300)
         .onAppear {
             isFocused = true

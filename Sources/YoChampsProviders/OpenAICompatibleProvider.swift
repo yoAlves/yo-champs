@@ -122,7 +122,11 @@ public struct OpenAICompatibleProvider: LLMProvider {
                         configuration: configuration
                     )
                     try Task.checkCancellation()
-                    try Self.mapStatus(response.statusCode, model: request.model)
+                    let status = response.statusCode
+                    if !(200 ..< 300).contains(status) {
+                        let detail = await Self.errorDetail(from: response.body)
+                        try Self.mapStatus(status, model: request.model, detail: detail)
+                    }
                     try await Self.consume(response.body, into: continuation)
                     continuation.finish()
                 } catch is CancellationError {
@@ -236,7 +240,36 @@ public struct OpenAICompatibleProvider: LLMProvider {
         }
     }
 
-    private static func mapStatus(_ status: Int, model: String) throws {
+    /// Reads a bounded, single-line server message from an error response. The
+    /// body is consumed only on the error path; successful streams are untouched.
+    private static func errorDetail(from body: AsyncThrowingStream<UInt8, Error>) async -> String {
+        var data = Data()
+        do {
+            for try await byte in body {
+                data.append(byte)
+                if data.count >= 4096 {
+                    break
+                }
+            }
+        } catch {
+            return ""
+        }
+        var message: String?
+        if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            message = object["message"] as? String
+                ?? object["error"] as? String
+                ?? object["detail"] as? String
+                ?? object["error_message"] as? String
+        }
+        let raw = message ?? String(data: data, encoding: .utf8) ?? ""
+        return String(raw
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .prefix(300))
+    }
+
+    private static func mapStatus(_ status: Int, model: String, detail: String) throws {
         switch status {
         case 200 ..< 300:
             return
@@ -249,7 +282,7 @@ public struct OpenAICompatibleProvider: LLMProvider {
         case 429:
             throw LLMError.rateLimited
         case 400, 422:
-            throw LLMError.invalidRequest("invalid request")
+            throw LLMError.invalidRequest(detail.isEmpty ? "invalid request" : detail)
         default:
             throw LLMError.provider("unexpected status \(status)")
         }

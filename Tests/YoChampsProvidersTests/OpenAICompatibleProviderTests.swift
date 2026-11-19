@@ -283,3 +283,61 @@ struct OpenAICompatibleProviderTests {
         )
     }
 }
+
+@Suite("OpenAI-compatible provider error detail")
+struct OpenAICompatibleProviderErrorDetailTests {
+    private let request = LLMRequest(
+        model: "test-model",
+        messages: [LLMMessage(role: .user, content: "hello")],
+        headers: ["X-Test": "yes"]
+    )
+
+    private func makeProvider(transport: FakeTransport) -> OpenAICompatibleProvider {
+        OpenAICompatibleProvider(
+            configuration: OpenAICompatibleProvider.Configuration(
+                baseURL: URL(string: "https://example.test/v1")!,
+                maxRetries: 0,
+                retryDelay: .milliseconds(250),
+                timeout: .seconds(5)
+            ),
+            transport: transport,
+            clock: RecordingClock()
+        )
+    }
+
+    private func bodyStream(_ text: String) -> AsyncThrowingStream<UInt8, Error> {
+        AsyncThrowingStream<UInt8, Error> { continuation in
+            for byte in Array(text.utf8) {
+                continuation.yield(byte)
+            }
+            continuation.finish()
+        }
+    }
+
+    @Test("surfaces the server message from an invalid request")
+    func invalidRequestUsesServerMessage() async {
+        let transport = FakeTransport()
+        await transport.enqueue(
+            status: 400,
+            body: bodyStream(#"{"message":"cannot specify both 'thinking' and 'reasoning_effort'"}"#)
+        )
+
+        await ProviderContract.failure(
+            makeProvider(transport: transport),
+            request: request,
+            expected: .invalidRequest("cannot specify both 'thinking' and 'reasoning_effort'")
+        )
+    }
+
+    @Test("falls back to the raw body when the error is not a JSON message")
+    func invalidRequestUsesRawBody() async {
+        let transport = FakeTransport()
+        await transport.enqueue(status: 422, body: bodyStream("invalid parameter: reasoning_effort"))
+
+        await ProviderContract.failure(
+            makeProvider(transport: transport),
+            request: request,
+            expected: .invalidRequest("invalid parameter: reasoning_effort")
+        )
+    }
+}

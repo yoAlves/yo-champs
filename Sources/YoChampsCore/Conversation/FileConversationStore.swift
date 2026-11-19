@@ -43,10 +43,16 @@ public enum ConversationFileMigrator {
 public actor FileConversationStore: ConversationStore {
     private let directory: URL
     private let fileName: String
+    private let retention: ConversationRetention
 
-    public init(directory: URL, fileName: String = "history.json") {
+    public init(
+        directory: URL,
+        fileName: String = "history.json",
+        retention: ConversationRetention = .init()
+    ) {
         self.directory = directory
         self.fileName = fileName
+        self.retention = retention
     }
 
     private var fileURL: URL {
@@ -69,11 +75,28 @@ public actor FileConversationStore: ConversationStore {
         guard conversation.schemaVersion == ConversationFileMigrator.currentVersion else {
             throw ConversationFileError.unsupportedSchemaVersion(conversation.schemaVersion)
         }
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let retained = retention.trim(conversation)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        let data = try encoder.encode(conversation)
+        let data = try encoder.encode(retained)
+        try createPrivateDirectory()
         try data.write(to: fileURL, options: .atomic)
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o600],
+            ofItemAtPath: fileURL.path
+        )
+    }
+
+    private func createPrivateDirectory() throws {
+        let manager = FileManager.default
+        try manager.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o700]
+        )
+        // createDirectory only applies its attributes to a directory it creates,
+        // so an existing directory keeps whatever mode it already had.
+        try manager.setAttributes([.posixPermissions: 0o700], ofItemAtPath: directory.path)
     }
 
     public func clear() async throws {

@@ -44,6 +44,10 @@ struct SelectableMarkdownText: NSViewRepresentable {
         textView.isHorizontallyResizable = false
         textView.isVerticallyResizable = true
         textView.autoresizingMask = [.width]
+        // NSTextView does not inherit SwiftUI's primary color: without this,
+        // text without an explicit attribute draws black in dark mode.
+        textView.textColor = .labelColor
+        textView.insertionPointColor = .labelColor
         textView.textContainerInset = .zero
         textView.textContainer?.lineFragmentPadding = 0
         textView.textContainer?.widthTracksTextView = true
@@ -98,11 +102,16 @@ struct SelectableMarkdownText: NSViewRepresentable {
 }
 
 /// `NSTextView` that copies a non-empty selection when the mouse is released.
+///
+/// The copy runs after `super.mouseDown` returns: `NSTextView` tracks the drag
+/// selection inside its own mouse loop and consumes the mouse-up, so overriding
+/// `mouseUp(with:)` never fires. When `super.mouseDown` returns, the selection is
+/// final (mouse released) and an empty click is a no-op.
 final class SelectableTextView: NSTextView {
     var pasteboard: PasteboardWriting = GeneralPasteboard()
 
-    override func mouseUp(with event: NSEvent) {
-        super.mouseUp(with: event)
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
         SelectionCopy.copyIfNeeded(
             selectedRange: selectedRange(),
             text: string,
@@ -130,7 +139,12 @@ enum MarkdownAttributedString {
                 font = NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask)
             }
 
-            var attributes: [NSAttributedString.Key: Any] = [.font: font]
+            var attributes: [NSAttributedString.Key: Any] = [
+                .font: font,
+                // Adaptive label color so the transcript follows light/dark
+                // appearance instead of the NSTextView default black.
+                .foregroundColor: NSColor.labelColor,
+            ]
             if run.styles.contains(.strikethrough) {
                 attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
             }

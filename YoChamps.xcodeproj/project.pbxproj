@@ -15,6 +15,7 @@
 		6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */; };
 		6743A86D799682858904C3C0 /* YoChampsProviders in Frameworks */ = {isa = PBXBuildFile; productRef = BC616AC8F3BFF204C5808750 /* YoChampsProviders */; };
 		72E5B8160F0648A40AA4664D /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 9756B223E2195E20886B4855 /* KeyboardShortcuts */; };
+		8F3992F3F6D9F5CBFF0E211A /* SelectableMarkdownText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFE97C9DFE7122A87491182 /* SelectableMarkdownText.swift */; };
 		91DD4DF140DB37FB75D5219B /* Mascots in Resources */ = {isa = PBXBuildFile; fileRef = 76365F040B8EF6C06266C3D8 /* Mascots */; };
 		B1498AE36BF2FC9DCF11B634 /* KeychainSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */; };
 		B9563CF6836F268417418326 /* YoChampsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DB3BFA955763BC4F0ABF56 /* YoChampsApp.swift */; };
@@ -43,6 +44,7 @@
 		2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderConfigFileStore.swift; sourceTree = "<group>"; };
 		48E90F11F251A279C49DE61F /* yo-champs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "yo-champs"; path = .; sourceTree = SOURCE_ROOT; };
 		53C51D3906A7FD622A75C680 /* CompanionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionViewModel.swift; sourceTree = "<group>"; };
+		5AFE97C9DFE7122A87491182 /* SelectableMarkdownText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableMarkdownText.swift; sourceTree = "<group>"; };
 		652BF9429ED53FADAD27E32F /* KeychainSecretStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainSecretStore.swift; sourceTree = "<group>"; };
 		66A3E48DC836A9C7B72FBB65 /* AskPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskPanel.swift; sourceTree = "<group>"; };
 		7334E8100D7E60A42D18D04F /* SettingsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsPanel.swift; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 				156C9132DCC4F47A885DAD1E /* MascotPackLoader.swift */,
 				98A9B38EE986529B57A53E82 /* MascotRenderer.swift */,
 				2008732E745FA945180A8B8B /* ProviderConfigFileStore.swift */,
+				5AFE97C9DFE7122A87491182 /* SelectableMarkdownText.swift */,
 				7334E8100D7E60A42D18D04F /* SettingsPanel.swift */,
 				19EEAF2BFF18C868581A69B5 /* SettingsView.swift */,
 				D36CB7DCB04364EAB0D3F9F4 /* SettingsViewModel.swift */,
@@ -261,6 +264,7 @@
 				6396965F2AF5AD96ED38F36D /* MascotPackLoader.swift in Sources */,
 				29907D57CE39194D093DBE94 /* MascotRenderer.swift in Sources */,
 				C3D2718FCECC5BA4A428B84A /* ProviderConfigFileStore.swift in Sources */,
+				8F3992F3F6D9F5CBFF0E211A /* SelectableMarkdownText.swift in Sources */,
 				DB8B0B3D06ACC6A35D3B6B8F /* SettingsPanel.swift in Sources */,
 				FF8006036A56C9630A2E34F4 /* SettingsView.swift in Sources */,
 				E816787182B0E7DD06760F3B /* SettingsViewModel.swift in Sources */,

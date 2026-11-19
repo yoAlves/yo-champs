@@ -108,6 +108,20 @@ struct SelectableMarkdownTextTests {
         #expect(pasteboard.writes.isEmpty)
     }
 
+    @Test("text uses the adaptive label color in every run")
+    func textUsesLabelColor() {
+        let attributed = makeAttributed("plain **strong** ~~gone~~")
+
+        var matches = true
+        attributed.enumerateAttribute(
+            .foregroundColor,
+            in: NSRange(location: 0, length: attributed.length)
+        ) { value, _, _ in
+            matches = matches && (value as? NSColor) == NSColor.labelColor
+        }
+        #expect(matches)
+    }
+
     @Test("selection ranges are measured in UTF-16 code units")
     func selectionRangeUsesUTF16Offsets() {
         let pasteboard = FakePasteboard()

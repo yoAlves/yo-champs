@@ -6,14 +6,14 @@
 # Exit codes:
 #   0  every check passed
 #   1  a check failed, the PR does not exist, or gh is not authenticated
-#   8  still pending when a timeout expired (registration, watch or query)
+#   8  still pending when a timeout expired (registration or watch)
 #
 # Bounds:
 #   - up to 120s waiting for GitHub to register the checks after a push
 #     (`PR_CHECKS_REGISTER_TIMEOUT` overrides it; the test suite uses that);
 #   - `timeout-seconds` (default 2400) for the watch itself;
-#   - 30s per probe and 60s per table query, so a stalled connection cannot
-#     defeat the deadline.
+#   - 30s per probe and 60s per table query; a table-query failure is ignored,
+#     so a stalled connection cannot defeat the deadline.
 #
 # Why not `gh pr checks --watch` alone:
 # - right after a push GitHub has not registered the checks yet and the watch
@@ -35,13 +35,18 @@ for tool in gh perl; do
     fi
 done
 
-for value in "$PR" "$TIMEOUT" "$REGISTER_TIMEOUT"; do
-    if ! [[ "$value" =~ ^[1-9][0-9]*$ ]]; then
-        echo "pr-checks: expected a positive integer, got '$value'" >&2
-        exit 1
-    fi
-done
-
+if ! [[ "$PR" =~ ^[1-9][0-9]*$ ]]; then
+    echo "pr-checks: the PR number must be a positive integer, got '$PR'" >&2
+    exit 1
+fi
+if ! [[ "$TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "pr-checks: the timeout must be a positive integer, got '$TIMEOUT'" >&2
+    exit 1
+fi
+if ! [[ "$REGISTER_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
+    echo "pr-checks: PR_CHECKS_REGISTER_TIMEOUT must be a positive integer, got '$REGISTER_TIMEOUT'" >&2
+    exit 1
+fi
 gh_bounded() { # seconds gh-args...
     local seconds="$1"
     shift

@@ -42,8 +42,9 @@ expect() { # name expected_exit expected_pattern command...
     local name="$1" expected="$2" pattern="$3"
     shift 3
     local out status
+    rm -f "$tmp/state"
     # Bound every case so a fixture bug cannot hang the suite.
-    out="$(PATH="$tmp:$PATH" perl -e 'alarm shift; exec @ARGV' 120 "$@" 2>&1)"
+    out="$(PATH="$tmp:$PATH" perl -e 'alarm shift; exec @ARGV or die "pr-checks-test: cannot exec $ARGV[0]: $!\n"' 120 "$@" 2>&1)"
     status=$?
     if [ "$status" -ne "$expected" ]; then
         echo "FAIL $name: expected exit $expected, got $status"

@@ -57,7 +57,7 @@ mascot-validate: ## Validate the default pack and local packs
 
 verify: lint test build mascot-validate secrets ## Full gate: lint, test, build, pack, secrets
 
-ci: verify provider-check ## Exactly what GitHub Actions runs
+ci: verify provider-check pr-checks-test ## Exactly what GitHub Actions runs
 
 pr-checks: ## Wait for a PR's checks to finish (PR=<number>, optional TIMEOUT=<seconds>)
 	@./scripts/pr-checks.sh "$(PR)" "$(or $(TIMEOUT),2400)"

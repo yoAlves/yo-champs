@@ -29,8 +29,8 @@ The single automated gate. It runs, in order:
 
 `make provider-check` is the M2 integration check: it runs the real streaming
 client against a local SSE stub. `make ci` (macOS) runs `verify` followed by
-`provider-check`; `make verify` alone does not start the stub. XCUITest still
-waits for full Xcode. UI validation never uses MCP.
+`provider-check` and `pr-checks-test`; `make verify` alone does not start the
+stub. XCUITest still waits for full Xcode. UI validation never uses MCP.
 
 ## CI
 

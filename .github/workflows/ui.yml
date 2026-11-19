@@ -11,9 +11,9 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ui-${{ github.ref }}
-  cancel-in-progress: true
+# No concurrency block on purpose: a manual dispatch on `main` shares the ref
+# with the nightly run and would cancel the regression report it exists for.
+# The job is bounded by timeout-minutes, so overlap is harmless.
 
 jobs:
   ui:

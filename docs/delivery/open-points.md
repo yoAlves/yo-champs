@@ -15,7 +15,6 @@ suite, a day), **L** (design work or a cross-module change).
 
 | ID | Point | Severity | Size | Evidence / where |
 |---|---|---|---|---|
-| O1 | Provider redirects still follow `URLSession` defaults; a cross-host redirect is not rejected, so request headers can be forwarded onward | **Critical** | M | `Sources/YoChampsNetwork/URLSessionLLMTransport.swift`; threat model "redirects currently follow URLSession defaults" |
 | O2 | A failed post-write `chmod` reports the turn as failed even though the history was saved; the atomic write leaves a sub-ms umask window before `0600` | Should | S | `Sources/YoChampsCore/Conversation/FileConversationStore.swift` |
 | O3 | `config.json` is created without explicit modes; the shared Application Support directory only becomes `0700` after the first history save | Should | S | `Sources/YoChampsMac/ProviderConfigFileStore.swift`; documented in the threat model |
 | O4 | `ConversationRetention` falls back to `.max` (drop everything) when encoding fails, instead of failing safe | Should | S | `Sources/YoChampsCore/Conversation/ConversationRetention.swift` |
@@ -33,12 +32,11 @@ suite, a day), **L** (design work or a cross-module change).
 
 ## Next refinement round (proposed)
 
-1. **O1** — reject cross-host redirects in the transport (security).
-2. **O2 + O3** — private write path end to end: apply modes on the temp file,
+1. **O2 + O3** — private write path end to end: apply modes on the temp file,
    keep `clear()`/`save()` semantics, and cover the chmod failure path.
-3. **O4 + O5** — fail-safe retention fallback and a documented transport
+2. **O4 + O5** — fail-safe retention fallback and a documented transport
    contract.
-4. **O6 + O7 + O8** — warning-free Release build and the two test gaps that
+3. **O6 + O7 + O8** — warning-free Release build and the two test gaps that
    protect documented behavior.
 
 Everything else stays in the backlog until a feature pulls it in.

@@ -32,7 +32,11 @@ public struct URLSessionLLMTransport: LLMHTTPTransport {
         }
 
         do {
-            let (bytes, response) = try await session.bytes(for: urlRequest)
+            let redirectGuard = RedirectGuard(originalURL: request.url)
+            let (bytes, response) = try await session.bytes(
+                for: urlRequest,
+                delegate: redirectGuard
+            )
             guard let http = response as? HTTPURLResponse else {
                 throw LLMTransportError.connection("invalid HTTP response")
             }
@@ -66,5 +70,69 @@ public struct URLSessionLLMTransport: LLMHTTPTransport {
         default:
             return LLMTransportError.connection(urlError.localizedDescription)
         }
+    }
+}
+
+/// Redirects may only stay on the configured provider origin: scheme, host and
+/// port must match the original request. The request carries the
+/// Keychain-backed key, so a cross-origin redirect must not receive it.
+struct RedirectPolicy: Sendable, Equatable {
+    private let scheme: String
+    private let host: String
+    private let port: Int?
+
+    init(url: URL) {
+        let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        let scheme = components?.scheme?.lowercased() ?? ""
+        self.scheme = scheme
+        host = components?.host?.lowercased() ?? ""
+        port = Self.effectivePort(scheme: scheme, port: components?.port)
+    }
+
+    func allows(_ url: URL) -> Bool {
+        guard !scheme.isEmpty,
+              !host.isEmpty,
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let newScheme = components.scheme?.lowercased(),
+              let newHost = components.host?.lowercased()
+        else {
+            return false
+        }
+        return newScheme == scheme
+            && newHost == host
+            && Self.effectivePort(scheme: newScheme, port: components.port) == port
+    }
+
+    private static func effectivePort(scheme: String, port: Int?) -> Int? {
+        if let port {
+            return port
+        }
+        switch scheme {
+        case "http": return 80
+        case "https": return 443
+        default: return nil
+        }
+    }
+}
+
+private final class RedirectGuard: NSObject, URLSessionTaskDelegate {
+    private let policy: RedirectPolicy
+
+    init(originalURL: URL) {
+        policy = RedirectPolicy(url: originalURL)
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping @Sendable (URLRequest?) -> Void
+    ) {
+        guard let url = request.url, policy.allows(url) else {
+            completionHandler(nil)
+            return
+        }
+        completionHandler(request)
     }
 }

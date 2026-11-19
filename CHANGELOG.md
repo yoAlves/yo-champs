@@ -11,6 +11,10 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+### Security
+
+- Provider redirects are limited to the configured origin; cross-host, scheme or port changes are rejected before request headers can be forwarded.
+
 ## [0.1.1] - 2026-11-19
 
 ### Added

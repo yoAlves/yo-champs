@@ -45,7 +45,44 @@ do {
     guard answer == "Hello from stub" else {
         fail("unexpected answer: \(answer)")
     }
-    print("provider-check: OK")
 } catch {
     fail("provider request failed: \(String(describing: error))")
 }
+
+/// A redirect that leaves the provider origin must not be followed: request
+/// headers carry the Keychain-backed key. The stub redirects to `localhost`
+/// and records any hit on the target.
+let redirectProvider = OpenAICompatibleProvider(
+    configuration: OpenAICompatibleProvider.Configuration(
+        baseURL: baseURL.appendingPathComponent("redirect"),
+        maxRetries: 0,
+        retryDelay: .zero,
+        timeout: .seconds(5)
+    ),
+    transport: URLSessionLLMTransport()
+)
+
+var redirectError: Error?
+do {
+    for try await _ in redirectProvider.stream(request) {}
+} catch {
+    redirectError = error
+}
+
+guard let redirectError, String(describing: redirectError).contains("302") else {
+    fail("cross-host redirect was followed: \(String(describing: redirectError))")
+}
+
+let leakCountURL = URL(string: "/leak-count", relativeTo: baseURL)!.absoluteURL
+guard let (leakCountData, _) = try? await URLSession.shared.data(from: leakCountURL) else {
+    fail("leak-count endpoint unreachable at \(leakCountURL.absoluteString)")
+}
+
+guard String(data: leakCountData, encoding: .utf8)?
+    .trimmingCharacters(in: .whitespacesAndNewlines) == "0"
+else {
+    fail("cross-host redirect reached the redirect target")
+}
+
+print("provider-check: redirect blocked")
+print("provider-check: OK")

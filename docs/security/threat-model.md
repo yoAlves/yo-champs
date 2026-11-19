@@ -26,7 +26,7 @@
 |---|---|
 | API key leaked to disk, logs, fixtures or git | Keychain only; `secretRef`; gitleaks; redacted logging; no keys in screenshots |
 | Prompt injection via provider output or future attachments | system/developer/user hierarchy; content is data; no side-effectful tools; adversarial eval is an open M4 backlog item |
-| Malicious provider endpoint | user-configured URL, visible in settings; HTTPS required outside loopback (`localhost`/`127.0.0.1`/`::1` only for `http`); redirects currently follow `URLSession` defaults (hardening is a follow-up); clear errors |
+| Malicious provider endpoint | user-configured URL, visible in settings; HTTPS required outside loopback (`localhost`/`127.0.0.1`/`::1` only for `http`); redirects are limited to the configured origin (scheme, host and port), so request headers cannot be forwarded elsewhere; clear errors |
 | Local pack with malicious/huge assets | validator limits (manifest 64 KB, sheet 5 MB, preview 2 MB) and dimension checks; no code execution from packs |
 | History exposure on a shared Mac | files under the user account; after the first history save the directory is `0700` and `history.json` `0600`; 2 MB history cap; clear-history action (M2); no telemetry. See [`data-and-privacy.md`](data-and-privacy.md) |
 | Supply chain (dependencies, actions, MCP) | minimal dependencies, pinned versions, reviewed actions, opt-in MCP (ADR 0008) |
@@ -45,4 +45,5 @@
 - Pack validator limits.
 - Provider payload boundary test (`PrivacyPayloadTests`): fixed body keys, no
   secret/path/telemetry fields, no invented `Authorization` header.
+- Cross-origin redirect rejected (`RedirectPolicyTests`; `make provider-check`).
 - M4 injection eval and review checklist.

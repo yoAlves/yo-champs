@@ -1,0 +1,27 @@
+name: ui
+
+# Non-blocking UI signal, not a required check: the XCUITest suite needs a
+# foreground GUI session and is slower/flakier than the gate set, so it runs on
+# demand and nightly instead of on every PR.
+# Required PR checks stay `core (linux)` and `app + gates (macos)`.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+# No concurrency block on purpose: a manual dispatch on `main` shares the ref
+# with the nightly run and would cancel the regression report it exists for.
+# The job is bounded by timeout-minutes, so overlap is harmless.
+
+jobs:
+  ui:
+    name: ui (macos xcuitest)
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: make test-ui
+        run: make test-ui

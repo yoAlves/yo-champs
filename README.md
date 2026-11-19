@@ -59,7 +59,8 @@ Read `docs/architecture/overview.md` and the ADRs in `docs/decisions/`.
 | `docs/product/v0.md` | V0 scope, stories, providers, mascot, definition of done |
 | `docs/delivery/milestones/` | Binding contracts M0–M4 |
 | `docs/delivery/status.md` | Current milestone, gate, evidence |
-| `docs/delivery/releases/` | Release notes (M0, v0.1.0) |
+| `docs/delivery/open-points.md` | Tracked technical debt: severity, size, evidence |
+| `docs/delivery/releases/` | Release notes (M0, v0.1.0, v0.1.1) |
 | `docs/architecture/` | Module graph, contracts, data/versioning, pack format |
 | `docs/decisions/` | Decision log and ADRs |
 | `docs/security/` | Threat model, data and privacy, prompt injection, MCP policy |

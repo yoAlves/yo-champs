@@ -103,6 +103,13 @@ Every milestone ends with a report containing:
 ID, no notarization, no publish, and it prints that notice. It never deletes
 user data; destructive resets are a separate, confirmed target (post-V0).
 
+## Open points
+
+Technical debt and follow-ups are tracked in
+[`open-points.md`](open-points.md) with severity (`Critical`, `Should`,
+`Backlog`), size (`S`/`M`/`L`) and the evidence for each. Re-triage at every
+release; a point closes only when it is fixed and covered by a test.
+
 ## Changelog
 
 `CHANGELOG.md` is append-only: new bullets go under `## [Unreleased]`, released

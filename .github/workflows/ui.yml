@@ -1,0 +1,26 @@
+name: ui
+
+# Non-blocking UI signal, not a required check: `make test-ui` needs full Xcode
+# and a window server, so it runs on demand and nightly instead of on every PR.
+# Required PR checks stay `core (linux)` and `app + gates (macos)`.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ui:
+    name: ui (macos xcuitest)
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: make test-ui
+        run: make test-ui

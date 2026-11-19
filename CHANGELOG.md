@@ -11,6 +11,27 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+### Added
+
+- Markdown answers in the Ask transcript: `**bold**`, `~~strikethrough~~` and `_italic_` render styled; unclosed markers stay literal.
+- Copy on select for question and answer text; the input field is unaffected.
+- Ask header with the animated Champ avatar on the left and the `+` new-chat button on the right, plus a centered footer disclaimer.
+- Non-blocking `ui` workflow (`workflow_dispatch` + nightly) that runs `make test-ui` on `macos-15-intel`.
+- `make pr-checks PR=<number>` and `make pr-checks-test`: a bounded wait for a PR's checks and its deterministic suite.
+
+### Changed
+
+- Conversation history is capped at 2 MB of encoded JSON: the oldest complete user/assistant turns are dropped and the newest turn is always kept.
+- `history.json` is written into a `0700` directory with `0600` permissions, including when the directory already existed.
+- Provider profiles must use HTTPS outside loopback; `http` is accepted only for `localhost`, `127.0.0.1` and `::1`.
+- Settings "Test connection" rejects an insecure base URL before reading the key or sending a request.
+- The transcript keeps its previous text size (12 pt) and follows the system light/dark appearance.
+
+### Security
+
+- ADR 0013 and `docs/security/data-and-privacy.md` document what stays local, what leaves in a provider request, and the retention/encryption stance.
+- `PrivacyPayloadTests` pins the outbound body keys and headers and fails on any secret, path or telemetry field.
+
 ## [0.1.0] - 2026-11-17
 
 First functional V0 release: the menu bar companion answers, streams, keeps

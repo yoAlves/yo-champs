@@ -1,7 +1,9 @@
 # Champ Panel Chat Restyle — Design
 
 **Date:** 2026-11-17
-**Status:** Approved (conversation 2026-11-17)
+**Status:** Approved (conversation 2026-11-17); header and text rendering
+superseded on 2026-11-19 (Markdown answers, copy on select, avatar moved to the
+left) — see `docs/delivery/status.md`.
 
 ## Intent
 

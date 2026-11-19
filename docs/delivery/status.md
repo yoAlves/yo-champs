@@ -1,17 +1,57 @@
 # Status
 
-## Current state (2026-11-17)
+## Current state (2026-11-19)
 
-**Version:** 0.1.0 — tag `v0.1.0` on `main` (merge commit `aec7452`).
+**Version:** 0.1.0 — tag `v0.1.0` on `main` (merge commit `aec7452`); `main` also
+carries the post-v0.1.0 hardening merged on 2026-11-19 (no new tag).
 **Milestones:** M0–M3 complete and merged. M4 hardening is an open
 post-release backlog (release ruling in `milestones/M4.md`).
-**App:** functional V0 loop — menu bar, ⌥⌘K, streaming, multi-turn persisted
-context (the visible transcript starts fresh), embedded Champ,
-Settings/Keychain, resizable Ask window.
-**Gate:** `make verify` and `make test-ui` green on `release/v0.1.0` (evidence
-below).
+**App:** functional V0 loop — menu bar, ⌥⌘K, streaming Markdown answers with
+copy on select, multi-turn persisted context (the visible transcript starts
+fresh), embedded Champ with the avatar in the header, Settings/Keychain,
+resizable Ask window.
+**Gate:** `make verify` and `make test-ui` green on `main` (evidence below).
 **Open:** evals, injection fixtures, performance report, `make release-dry-run`,
 recorded demo, public checklist. V0.1 features stay out of this release.
+
+## Post-v0.1.0 hardening (2026-11-19)
+
+**State:** merged on `main`; no tag cut.
+**Plan:** Ask UI, local data & CI hardening (2026-11-19).
+
+| PR | Scope | Merge commit |
+|---|---|---|
+| [#17](https://github.com/yoAlves/yo-champs/pull/17) | 2 MB history cap; `0700`/`0600` modes | `92fa1a5` |
+| [#18](https://github.com/yoAlves/yo-champs/pull/18) | HTTPS outside loopback; Settings "Test connection" key guard; payload boundary test; ADR 0013 + privacy docs | `4671e14` |
+| [#19](https://github.com/yoAlves/yo-champs/pull/19) | Markdown parser, selectable text with copy on select, new Ask header/footer, demo answer, 4 new XCUITest cases | `9b58bba` |
+| [#20](https://github.com/yoAlves/yo-champs/pull/20) | Non-blocking `ui` workflow and the gate docs that govern it | `b1b87d7` |
+| [#21](https://github.com/yoAlves/yo-champs/pull/21) | Bounded `pr-checks` watcher and its deterministic suite in `make ci` | `e931955` |
+
+### Gate
+
+| Check | Result | Evidence |
+|---|---|---|
+| `make verify` | pass | exit 0; SwiftFormat 0/71 need formatting; SwiftLint 0 violations in 69 files; 171 tests / 25 suites (91 core + 62 providers + 18 Mac); app build; 1 pack; gitleaks `no leaks found` |
+| `make test-ui` | pass | 11 cases, 0 failures, `** TEST SUCCEEDED **` (~77 s) |
+| CI (PRs #17–#21) | pass | `core (linux)` and `app + gates (macos)` green on every merge |
+| `ui` workflow (run [44534215571](https://github.com/yoAlves/yo-champs/actions/runs/44534215571)) | pass | `workflow_dispatch` on `main`: `make test-ui` on `macos-15-intel`, 5m18s |
+| Review | pass | per-PR `@reviewer`; focused re-reviews on #19, #20 and #21; 0 critical/important open |
+
+### Rulings and deviations
+
+- Transcript text stays at 12 pt (macOS `.callout`) instead of the component default 13 pt, per the owner's "same size as before" request.
+- Copy on select runs after `super.mouseDown` returns: `NSTextView` consumes the mouse-up inside its own tracking loop.
+- The Settings "Test connection" cleartext-key hole was fixed inside PR #18 as an added task (3b) rather than deferred.
+- Changelog entries are written once here (PR5) instead of per PR, to keep the append-only union-merge file single-writer.
+- The PR lanes ran sequentially instead of in parallel worktrees; `test-ui`/`run` serialize on one app instance anyway.
+
+### Gaps and risks
+
+- POSIX modes are applied after the atomic write, so the file is briefly umask-moded inside a `0700` directory; a post-write chmod failure surfaces as a failed turn although the history was saved.
+- `config.json` gets no explicit mode; the shared Application Support directory becomes `0700` only after the first history save (documented; config holds no secret).
+- Provider redirects still follow `URLSession` defaults; cross-host redirect rejection remains a follow-up.
+- The `ui` workflow is a signal, not a required check; its nightly run depends on the GitHub-hosted GUI session.
+- XCUITest remains order-sensitive (`make stop` first) and uses `--demo`; the real Keychain/provider path stays manual.
 
 ## v0.1.0 — functional V0 (2026-11-17)
 

@@ -4,6 +4,10 @@
 
 **Goal:** Turn the floating ask panel into a chat-style box: CHAMP badge + mascot avatar header, scrollable multi-turn transcript, input pinned at the bottom, following the system appearance.
 
+> Historical plan (2026-11-17). Superseded on 2026-11-19 for the header and text
+> rendering: the badge is gone, the avatar moved to the left, and answers render
+> Markdown with copy on select. See `docs/delivery/status.md`.
+
 **Architecture:** `CompanionViewModel` accumulates display-only `ChatTurn` values while `CompanionEngine` keeps owning the conversation context (unchanged). `AskView` is rewritten around a transcript `ScrollView` with the header and input rows fixed, using semantic colors so dark/light comes for free.
 
 **Tech Stack:** Swift 6 (SwiftUI, AppKit, Swift Testing 6.2.4), SwiftPM.

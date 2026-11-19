@@ -3,10 +3,12 @@
 A native macOS menu bar companion with the nostalgia of a desk assistant and a
 real, provider-agnostic LLM underneath. V0 answers short questions in a chat
 panel with an original paperclip character named **Champ** embedded in the
-header.
+header. Answers render Markdown, and selecting answer or question text copies it.
 
-**Status:** v0.1.0 (functional V0). M4 hardening is a post-release backlog; see
-`docs/delivery/status.md`.
+**Status:** v0.1.0 plus the 2026-11-19 post-release hardening (history cap and
+file modes, HTTPS outside loopback, Markdown answers with copy on select, new
+Ask header/footer, `ui` workflow). M4 hardening is still a post-release backlog;
+see `docs/delivery/status.md`.
 
 > Fan-spirited project with an original character. Not affiliated with or
 > endorsed by Microsoft. No Microsoft assets are included. Code is MIT;

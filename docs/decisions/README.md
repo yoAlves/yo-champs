@@ -34,6 +34,7 @@ the load-bearing ones; the log stays as the index of record.
 | D27 | GitFlow with protected `main`/`develop` (superseded by D28) | PR + required checks, no direct pushes or admin bypass | direct commits, unprotected main | 0010 |
 | D28 | PR to `main` only; no `develop` | solo/local V0: CI + protected main is the gate; fewer branches and no back-merges | GitFlow develop/release overhead | 0011 |
 | D29 | Champ is embedded in the Ask window; no separate mascot panel, drag or persisted position | one window keeps the chat and the character together; the floating pet duplicated window state | separate draggable mascot panel (M3) | 0012 |
+| D30 | Local data stays in Application Support (history `0700`/`0600`, 2 MB cap, keys in Keychain); only the provider payload leaves; HTTPS outside loopback | an explicit, tested boundary beats trusting every future field | telemetry, cloud sync, arbitrary `http`, app-level encryption now | 0013 |
 
 ## ADRs
 
@@ -49,3 +50,4 @@ the load-bearing ones; the log stays as the index of record.
 - [0010 — GitFlow with protected branches](0010-gitflow-protected-branches.md)
 - [0011 — PR to main only (no develop)](0011-pr-to-main.md)
 - [0012 — Champ embedded in the Ask window](0012-embedded-champ-ask.md)
+- [0013 — Local data and the outbound payload boundary](0013-local-data-and-privacy.md)

@@ -43,6 +43,14 @@ Adding a version means backing up the file first, adding a migration case here
 and writing back the current version; a failed migration leaves the old file
 intact.
 
+`ConversationRetention` caps the encoded history at 2 MB: past the cap, the
+oldest complete user/assistant turns are dropped and the newest turn is kept
+even when it alone exceeds the cap. On every save the directory (the app’s own
+Application Support directory) is set to mode `0700` and `history.json` to
+`0600`, including when the directory already existed. V0 has no app-level
+encryption; at-rest protection is those modes plus the OS disk encryption
+(FileVault). See [ADR 0013](../decisions/0013-local-data-and-privacy.md).
+
 ## Multi-OS
 
 Post-V1. The Core can ship as a library or behind a JSON-RPC daemon; the shell

@@ -230,6 +230,44 @@ struct ProviderConfigTests {
         }
     }
 
+    @Test("accepts https base URLs on any host")
+    func acceptsHTTPSOutsideLoopback() throws {
+        let registry = try ProviderConfigDecoder.decode(
+            configJSON(profiles: profileJSON(baseURL: "https://example.com/v1"))
+        )
+
+        #expect(registry.defaultProfile.baseURL.absoluteString == "https://example.com/v1")
+    }
+
+    @Test("rejects http base URLs outside loopback")
+    func rejectsHTTPOutsideLoopback() throws {
+        #expect {
+            try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON(baseURL: "http://example.com/v1")))
+        } throws: { error in
+            error as? ProviderConfigError == .insecureBaseURL(profileID: "personal-go", host: "example.com")
+        }
+    }
+
+    @Test("accepts http base URLs on loopback hosts")
+    func acceptsHTTPLoopback() throws {
+        for baseURL in [
+            "http://localhost:11434/v1",
+            "http://127.0.0.1:11434/v1",
+            "http://[::1]:11434/v1",
+        ] {
+            let registry = try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON(baseURL: baseURL)))
+            #expect(registry.defaultProfile.baseURL.absoluteString == baseURL)
+        }
+    }
+
+    @Test("insecure base URL error explains the HTTPS rule")
+    func insecureBaseURLDescription() {
+        let error = ProviderConfigError.insecureBaseURL(profileID: "personal-go", host: "example.com")
+
+        #expect(error.description.localizedCaseInsensitiveContains("https"))
+        #expect(error.description.localizedCaseInsensitiveContains("loopback"))
+    }
+
     @Test("reports malformed config with a coding path, not raw JSON errors")
     func malformedConfig() throws {
         let json = Data(#"{"schemaVersion":1,"profiles":[{"id":"p"}]}"#.utf8)
@@ -239,6 +277,54 @@ struct ProviderConfigTests {
             guard let configError = error as? ProviderConfigError,
                   case let .malformedConfig(path) = configError else { return false }
             return path.contains("profiles")
+        }
+    }
+}
+
+@Suite("Provider transport policy")
+struct ProviderTransportPolicyTests {
+    private func target(_ string: String) throws -> URL {
+        try #require(URL(string: string))
+    }
+
+    @Test("accepts https on any host")
+    func acceptsHTTPS() throws {
+        try ProviderTransportPolicy.requireSecure(
+            target("https://example.com/v1"),
+            profileID: "personal"
+        )
+    }
+
+    @Test("rejects http outside loopback")
+    func rejectsRemoteHTTP() throws {
+        #expect {
+            try ProviderTransportPolicy.requireSecure(
+                target("http://example.com/v1"),
+                profileID: "personal"
+            )
+        } throws: { error in
+            error as? ProviderConfigError == .insecureBaseURL(profileID: "personal", host: "example.com")
+        }
+    }
+
+    @Test("accepts http on loopback hosts")
+    func acceptsLoopbackHTTP() throws {
+        for baseURL in [
+            "http://localhost:11434/v1",
+            "http://127.0.0.1:11434/v1",
+            "http://[::1]:11434/v1",
+        ] {
+            try ProviderTransportPolicy.requireSecure(target(baseURL), profileID: "personal")
+        }
+    }
+
+    @Test("normalizes loopback hosts across whitespace, case and brackets")
+    func loopbackNormalization() {
+        for host in ["localhost", " LocalHost ", "127.0.0.1", "::1", "[::1]", "[::1] "] {
+            #expect(ProviderTransportPolicy.isLoopback(host: host), "expected \(host) to be loopback")
+        }
+        for host in ["example.com", "10.0.0.1", "127.0.0.2", "", "::2"] {
+            #expect(!ProviderTransportPolicy.isLoopback(host: host), "expected \(host) not to be loopback")
         }
     }
 }

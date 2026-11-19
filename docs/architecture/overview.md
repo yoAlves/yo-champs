@@ -59,12 +59,14 @@ XCUITest with full Xcode (ADR 0002).
 
 ## Window model
 
-One floating-level `NSPanel` hosts Ask: header with controls and the embedded
-Champ avatar, scrollable transcript, input row at the bottom. Show/Hide toggles
-that window, Esc hides it, and the process keeps running. The window is
-resizable and its frame is persisted by `frameAutosaveName`. There is no
-separate mascot window, mascot drag or restored mascot position; the Ask window
-itself is movable and frame-autosaved (ADR 0012).
+One floating-level `NSPanel` hosts Ask: a header with the animated Champ avatar
+on the left and the `+` new-chat button on the right, a scrollable transcript
+with Markdown answers (selectable, copy on select), the input row, and a
+centered footer disclaimer. Show/Hide toggles that window, Esc hides it, and the
+process keeps running. The window is resizable and its frame is persisted by
+`frameAutosaveName`. There is no separate mascot window, mascot drag or restored
+mascot position; the Ask window itself is movable and frame-autosaved
+(ADR 0012).
 
 ## Runtime data
 
@@ -84,7 +86,8 @@ transcript itself starts fresh in V0.
 2. `CompanionEngine` builds context from the conversation and agent definition.
 3. The provider streams `LLMEvent`s; the engine maps them to
    `CompanionState` and text deltas.
-4. The shell renders the chat transcript and the embedded mascot animation.
+4. The shell renders the chat transcript (Markdown runs via `MarkdownParser`,
+   copied on selection) and the embedded mascot animation.
 5. The store persists the turn; cancellation tears down the stream.
 
 ## UI validation

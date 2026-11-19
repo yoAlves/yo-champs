@@ -165,7 +165,12 @@ public protocol SecretStore: Sendable {
 M0–M1 use an in-memory store; M2 adds `FileConversationStore` (Core, injected
 directory, `schemaVersion` 1 + migrator, atomic writes) and the Keychain
 `SecretStore` in `YoChampsMac`. When a turn starts, the engine loads the stored
-conversation as context; the V0 transcript is not rehydrated.
+conversation and sends its recent turns as context; only the visible transcript
+starts empty, and nothing replays it into the panel (see ADR 0013).
+
+History is capped at 2 MB of encoded JSON by `ConversationRetention` (oldest
+complete turns dropped, newest turn always kept) and written into a `0700`
+directory with `0600` on the file.
 
 ## Provider profiles
 
@@ -217,12 +222,15 @@ constructor; the decoder and encoder both use the same invariants.
 
 The shell keeps `config.json` under Application Support via
 `ProviderConfigFileStore`: a missing file is onboarding, an unreadable or
-malformed one is a typed error. Settings edits the selected profile in place
-(preserving label, capabilities and the other profiles), writes the key only to
-Keychain, and adds the `Authorization` header at request time for “Test
-connection”. Distinct user-facing errors come from `LLMError`,
-`ProviderConfigError`, `SettingsError` and `KeychainError` descriptions;
-cancellation renders as “Cancelled”.
+malformed one is a typed error. Profiles are validated once by
+`ProviderProfileValidation`, which requires an absolute `http(s)` base URL and
+rejects `http` outside loopback (`ProviderTransportPolicy`: `localhost`,
+`127.0.0.1`, `::1` only). Settings edits the selected profile in place
+(preserving label, capabilities and the other profiles), validates the base URL
+before reading any key, writes the key only to Keychain, and adds the
+`Authorization` header at request time. Distinct user-facing errors come from
+`LLMError`, `ProviderConfigError`, `SettingsError` and `KeychainError`
+descriptions; cancellation renders as “Cancelled”.
 
 Header placeholders: `{{conversationId}}`, `{{appVersion}}`, `{{userAgent}}`.
 No real provider ships as default.

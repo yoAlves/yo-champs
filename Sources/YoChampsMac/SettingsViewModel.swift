@@ -192,6 +192,9 @@ final class SettingsViewModel: ObservableObject {
         isWorking = true
         defer { isWorking = false }
         do {
+            // Validate the transport before touching the Keychain or any
+            // header: a remote http URL must never carry a bearer token.
+            let baseURL = try validatedURL()
             let reference = secretRef.isEmpty ? "keychain:provider/\(profileID ?? "personal")" : secretRef
             let typedKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
             let key = try await typedKey.isEmpty ? storedKeyOrThrow(for: reference) : typedKey
@@ -199,7 +202,7 @@ final class SettingsViewModel: ObservableObject {
             requestHeaders = requestHeaders.filter { $0.key.lowercased() != "authorization" }
             requestHeaders["Authorization"] = "Bearer \(key)"
             let configuration = try OpenAICompatibleProvider.Configuration(
-                baseURL: validatedURL(),
+                baseURL: baseURL,
                 maxRetries: 0,
                 timeout: .seconds(10)
             )
@@ -253,7 +256,7 @@ final class SettingsViewModel: ObservableObject {
         return value
     }
 
-    private func validatedURL() throws -> URL {
+    func validatedURL() throws -> URL {
         guard let url = URL(string: baseURL.trimmingCharacters(in: .whitespaces)),
               let scheme = url.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
@@ -261,6 +264,7 @@ final class SettingsViewModel: ObservableObject {
         else {
             throw SettingsError.invalidBaseURL
         }
+        try ProviderTransportPolicy.requireSecure(url, profileID: profileID ?? "personal")
         return url
     }
 

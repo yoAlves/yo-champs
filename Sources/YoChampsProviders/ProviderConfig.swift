@@ -12,6 +12,7 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
     case credentialHeader(String)
     case emptyField(profileID: String, field: String)
     case invalidBaseURL(profileID: String)
+    case insecureBaseURL(profileID: String, host: String)
     case malformedConfig(String)
 
     public var description: String {
@@ -36,8 +37,32 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
             "profile '\(profileID)' has an empty \(field)"
         case let .invalidBaseURL(profileID):
             "profile '\(profileID)' needs an absolute http(s) baseURL"
+        case let .insecureBaseURL(profileID, host):
+            "profile '\(profileID)' needs https for '\(host)'; http is limited to loopback hosts"
         case let .malformedConfig(path):
             "config.json is malformed at \(path)"
+        }
+    }
+}
+
+/// The single transport rule for every base URL: https anywhere, http only
+/// for a provider running on this machine. The config loader and the Settings
+/// "Test connection" path both go through here, so a key-bearing request can
+/// never be sent in cleartext to a remote host.
+public enum ProviderTransportPolicy {
+    public static func isLoopback(host: String) -> Bool {
+        var normalized = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.hasPrefix("["), normalized.hasSuffix("]") {
+            normalized = String(normalized.dropFirst().dropLast())
+        }
+        return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1"
+    }
+
+    public static func requireSecure(_ url: URL, profileID: String) throws {
+        guard url.scheme?.lowercased() == "http" else { return }
+        let host = url.host ?? ""
+        guard isLoopback(host: host) else {
+            throw ProviderConfigError.insecureBaseURL(profileID: profileID, host: host)
         }
     }
 }
@@ -57,10 +82,11 @@ private enum ProviderProfileValidation {
         }
         guard let scheme = profile.baseURL.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
-              let host = profile.baseURL.host, !host.isEmpty
+              profile.baseURL.host?.isEmpty == false
         else {
             throw ProviderConfigError.invalidBaseURL(profileID: profile.id)
         }
+        try ProviderTransportPolicy.requireSecure(profile.baseURL, profileID: profile.id)
         try validateSecretRef(profile.secretRef, profileID: profile.id)
         for (name, value) in profile.headers {
             let normalizedValue = value.trimmingCharacters(in: .whitespaces).lowercased()

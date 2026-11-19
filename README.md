@@ -60,7 +60,10 @@ Read `docs/architecture/overview.md` and the ADRs in `docs/decisions/`.
 | `docs/delivery/releases/` | Release notes (M0, v0.1.0) |
 | `docs/architecture/` | Module graph, contracts, data/versioning, pack format |
 | `docs/decisions/` | Decision log and ADRs |
-| `docs/security/` | Threat model, prompt injection, MCP policy |
+| `docs/security/` | Threat model, data and privacy, prompt injection, MCP policy |
+
+No telemetry, no backend, no cloud sync. What stays on the Mac and what leaves
+in a provider request: [`docs/security/data-and-privacy.md`](docs/security/data-and-privacy.md).
 
 ## License
 

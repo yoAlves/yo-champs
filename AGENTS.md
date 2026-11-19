@@ -20,6 +20,7 @@ root of every session.
 | `make verify` | gate: lint, test, build, pack, secrets |
 | `make provider-check` | real SSE client against a local stub |
 | `make ci` | exactly what GitHub Actions runs (`verify` + `provider-check`) |
+| `make pr-checks PR=<n>` | wait for a PR's checks (bounded watch, no polling) |
 | `make deploy` | local release install to `~/Applications` and open |
 | `make restart` / `make stop` / `make open` / `make logs` | app lifecycle |
 

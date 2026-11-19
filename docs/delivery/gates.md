@@ -45,6 +45,18 @@ CI green means the workflow passed on the remote. A local `make ci` run is
 evidence of the same commands, but not of the remote result; record which one
 was observed.
 
+`.github/workflows/ui.yml` is a separate, **non-required** workflow: it runs
+`make test-ui` on `macos-15-intel` on `workflow_dispatch` and on a nightly
+schedule. The required `app + gates (macos)` job already has full Xcode; it does
+not run the XCUITest suite because that suite needs a foreground GUI session
+(the app is an accessory app, and cases click the status item and switch to
+Finder) and is slower and flakier than the gate set. So the UI suite runs on
+demand and nightly as a signal. A red `ui` run is not a merge blocker: required
+PR checks remain `core (linux)` and `app + gates (macos)`. If the hosted runner
+cannot run the suite headlessly, keep the workflow manual-only and record the
+limitation in `status.md`; never weaken the local `make test-ui` gate to make it
+pass.
+
 ## Branching and merges (PR to main)
 
 `main` is the only long-lived branch, protected: pull request required (0

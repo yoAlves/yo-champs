@@ -10,6 +10,7 @@ final class YoChampsUITests: XCTestCase {
         static let askSend = "askSendButton"
         static let newChat = "newChatButton"
         static let mascotWindow = "mascotPanel"
+        static let disclaimer = "disclaimerText"
         static let suite = "com.yurioliveira.yochamps"
         static let hotkeyKey = "KeyboardShortcuts_ask"
         static let showHide = "Show/Hide Ask"
@@ -197,6 +198,86 @@ final class YoChampsUITests: XCTestCase {
         XCTAssertEqual(mascotFrame.width, 56, accuracy: 2, "mascot avatar shrank below 56pt")
     }
 
+    // MARK: - New Ask layout and text behavior
+
+    /// The footer disclaimer is always visible under the input row.
+    func testDisclaimerIsVisible() {
+        launchApp()
+
+        let disclaimer = app.staticTexts[ID.disclaimer]
+        XCTAssertTrue(disclaimer.waitForExistence(timeout: 10), "disclaimer missing")
+        let text = (disclaimer.value as? String) ?? disclaimer.label
+        XCTAssertTrue(text.contains("Champ is an AI"), "unexpected disclaimer: \(text)")
+    }
+
+    /// Header order: the animated avatar sits on the left, new chat on the right.
+    func testHeaderMascotIsLeftOfNewChat() {
+        launchApp()
+
+        let mascot = app.images[ID.mascotWindow]
+        XCTAssertTrue(mascot.waitForExistence(timeout: 10), "mascot avatar missing")
+        let newChat = app.buttons[ID.newChat]
+        XCTAssertTrue(newChat.waitForExistence(timeout: 5), "new chat button missing")
+
+        XCTAssertLessThan(
+            mascot.frame.minX,
+            newChat.frame.minX,
+            "avatar must sit left of the new-chat button"
+        )
+    }
+
+    /// Markdown markers are styled, never shown literally.
+    func testAnswerHasNoLiteralMarkdown() {
+        launchApp()
+
+        guard let answer = waitForAnswer(timeout: 15) else {
+            XCTFail("demo answer did not appear")
+            return
+        }
+        let text = (answer.value as? String) ?? answer.label
+        XCTAssertFalse(text.contains("**"), "literal bold marker in: \(text)")
+        XCTAssertFalse(text.contains("~~"), "literal strike marker in: \(text)")
+    }
+
+    /// Selecting answer text copies it on mouse-up.
+    func testCopyOnSelect() {
+        launchApp()
+
+        guard let answer = waitForAnswer(timeout: 15) else {
+            XCTFail("demo answer did not appear")
+            return
+        }
+        XCTAssertTrue(app.buttons["Cancel"].waitForNonExistence(timeout: 10), "demo stream did not settle")
+
+        NSPasteboard.general.clearContents()
+        // Drag across the first line of the answer: a real selection gesture
+        // whose mouse-up must copy. A double-click at the element centre can
+        // land past short text and select nothing.
+        let start = answer.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.08))
+        let end = answer.coordinate(withNormalizedOffset: CGVector(dx: 0.55, dy: 0.08))
+        start.press(forDuration: 0.1, thenDragTo: end)
+
+        let deadline = Date().addingTimeInterval(5)
+        var copied = ""
+        while Date() < deadline {
+            copied = NSPasteboard.general.string(forType: .string) ?? ""
+            if !copied.isEmpty {
+                break
+            }
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+
+        XCTAssertFalse(
+            copied.isEmpty,
+            "mouse selection did not reach the pasteboard (frame=\(answer.frame), hittable=\(answer.isHittable))"
+        )
+        let displayed = (answer.value as? String) ?? answer.label
+        XCTAssertTrue(
+            displayed.contains(copied.trimmingCharacters(in: .whitespacesAndNewlines)),
+            "copied text \(copied) is not part of the answer"
+        )
+    }
+
     // MARK: - Helpers
 
     private func launchApp() {
@@ -238,10 +319,13 @@ final class YoChampsUITests: XCTestCase {
         )
     }
 
-    /// SwiftUI exposes `Text` through the AX `value`; XCUITest predicates on
-    /// `value` are unreliable here, so poll resolved elements directly.
+    /// SwiftUI exposes `Text` through the AX `value`; the Markdown answer is an
+    /// `NSTextView`, so it arrives under `textViews` instead. Poll both and
+    /// prefer the last match, so the newest turn wins.
     private func currentAnswer() -> XCUIElement? {
-        app.staticTexts.allElementsBoundByIndex.first {
+        let candidates = app.textViews.allElementsBoundByIndex
+            + app.staticTexts.allElementsBoundByIndex
+        return candidates.last {
             ($0.value as? String)?.contains(ID.demoAnswerSuffix) == true
         }
     }

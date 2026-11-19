@@ -19,7 +19,9 @@ root of every session.
 | `make mascot-validate` | validate default + local mascot packs |
 | `make verify` | gate: lint, test, build, pack, secrets |
 | `make provider-check` | real SSE client against a local stub |
-| `make ci` | exactly what GitHub Actions runs (`verify` + `provider-check`) |
+| `make ci` | exactly what GitHub Actions runs (`verify` + `provider-check` + `pr-checks-test`) |
+| `make pr-checks PR=<number> [TIMEOUT=<seconds>]` | wait for a PR's checks (bounded watch; ≈155s precheck/registration budget + TIMEOUT) |
+| `make pr-checks-test` | deterministic suite for the watcher (fake `gh`, no network) |
 | `make deploy` | local release install to `~/Applications` and open |
 | `make restart` / `make stop` / `make open` / `make logs` | app lifecycle |
 

@@ -13,7 +13,7 @@ INSTALLED_APP := $(HOME)/Applications/$(APP_NAME).app
 BUNDLE := $(ROOT)/.build/$(APP_NAME).app
 
 .PHONY: help bootstrap doctor build run demo test test-ui format lint secrets \
-	mascot-validate verify ci deploy restart stop open logs config mascots \
+	mascot-validate verify ci pr-checks pr-checks-test deploy restart stop open logs config mascots \
 	install-hooks clean provider-check eval release-dry-run release \
 	reset-local new-mascot tag
 
@@ -57,7 +57,13 @@ mascot-validate: ## Validate the default pack and local packs
 
 verify: lint test build mascot-validate secrets ## Full gate: lint, test, build, pack, secrets
 
-ci: verify provider-check ## Exactly what GitHub Actions runs
+ci: verify provider-check pr-checks-test ## Exactly what GitHub Actions runs
+
+pr-checks: ## Wait for a PR's checks to finish (PR=<number>, optional TIMEOUT=<seconds>)
+	@./scripts/pr-checks.sh "$(PR)" "$(or $(TIMEOUT),2400)"
+
+pr-checks-test: ## Run the deterministic pr-checks watcher suite (fake gh)
+	@./scripts/pr-checks-test.sh
 
 deploy: ## Release build + install to ~/Applications/YoChamps.app + open (local only)
 	@./scripts/deploy.sh

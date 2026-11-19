@@ -7,7 +7,7 @@ header. Answers render Markdown, and selecting answer or question text copies it
 
 **Status:** v0.1.0 plus the 2026-11-19 post-release hardening (history cap and
 file modes, HTTPS outside loopback, Markdown answers with copy on select, new
-Ask header/footer, `ui` workflow). M4 hardening is still a post-release backlog;
+Ask header, `ui` workflow). M4 hardening is still a post-release backlog;
 see `docs/delivery/status.md`.
 
 > Fan-spirited project with an original character. Not affiliated with or

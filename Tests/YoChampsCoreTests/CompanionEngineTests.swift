@@ -209,6 +209,39 @@ struct CompanionEngineTests {
         #expect(conversation.messages.isEmpty)
     }
 
+    @Test("passes the agent's reasoning effort to the request")
+    func passesReasoningEffort() async {
+        let recorder = RequestRecorder()
+        let agent = AgentDefinition(
+            id: "effort",
+            name: "Effort",
+            systemPrompt: "You are Champ.",
+            model: "mock-model",
+            reasoningEffort: "low"
+        )
+        let engine = CompanionEngine(
+            provider: SpyProvider(recorder: recorder, behavior: .reply(["ok"])),
+            agent: agent
+        )
+
+        for await _ in await engine.ask("hello") {}
+
+        #expect(recorder.requests[0].reasoningEffort == "low")
+    }
+
+    @Test("omits the reasoning effort when the agent has none")
+    func omitsReasoningEffortWhenUnset() async {
+        let recorder = RequestRecorder()
+        let engine = CompanionEngine(
+            provider: SpyProvider(recorder: recorder, behavior: .reply(["ok"])),
+            agent: agent
+        )
+
+        for await _ in await engine.ask("hello") {}
+
+        #expect(recorder.requests[0].reasoningEffort == nil)
+    }
+
     @Test("new chat clears context without restarting the engine")
     func newChatClearsContext() async throws {
         let (engine, recorder) = makeEngine(.reply(["one"]))

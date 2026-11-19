@@ -3,36 +3,38 @@ import Testing
 import YoChampsCore
 @testable import YoChampsProviders
 
+private func configJSON(
+    schemaVersion: Int = 1,
+    defaultProfileID: String? = "personal-go",
+    profiles: String
+) -> Data {
+    let defaultLine = defaultProfileID.map { ",\"defaultProfileID\":\"\($0)\"" } ?? ""
+    return Data("""
+    {"schemaVersion":\(schemaVersion)\(defaultLine),"profiles":[\(profiles)]}
+    """.utf8)
+}
+
+private func profileJSON(
+    id: String = "personal-go",
+    kind: String = "openai-compatible",
+    baseURL: String = "https://example.test/v1",
+    secretRef: String = "keychain:provider/personal-go",
+    headers: String = "\"headers\":{\"x-opencode-session\":\"{{conversationId}}\"},",
+    capabilities: String = "\"capabilities\":[\"streaming\"],",
+    effort: String? = nil,
+    isDefault: String = ""
+) -> String {
+    let effortLine = effort.map { "\"reasoningEffort\":\"\($0)\"," } ?? ""
+    return """
+    {"id":"\(id)","label":"Personal Go","kind":"\(kind)",\
+    "baseURL":"\(baseURL)","model":"test-model",\
+    \(headers)"secretRef":"\(secretRef)",\
+    \(capabilities)\(effortLine)\(isDefault)}
+    """
+}
+
 @Suite("Provider config")
 struct ProviderConfigTests {
-    private func configJSON(
-        schemaVersion: Int = 1,
-        defaultProfileID: String? = "personal-go",
-        profiles: String
-    ) -> Data {
-        let defaultLine = defaultProfileID.map { ",\"defaultProfileID\":\"\($0)\"" } ?? ""
-        return Data("""
-        {"schemaVersion":\(schemaVersion)\(defaultLine),"profiles":[\(profiles)]}
-        """.utf8)
-    }
-
-    private func profileJSON(
-        id: String = "personal-go",
-        kind: String = "openai-compatible",
-        baseURL: String = "https://example.test/v1",
-        secretRef: String = "keychain:provider/personal-go",
-        headers: String = "\"headers\":{\"x-opencode-session\":\"{{conversationId}}\"},",
-        capabilities: String = "\"capabilities\":[\"streaming\"],",
-        isDefault: String = ""
-    ) -> String {
-        """
-        {"id":"\(id)","label":"Personal Go","kind":"\(kind)",\
-        "baseURL":"\(baseURL)","model":"test-model",\
-        \(headers)"secretRef":"\(secretRef)",\
-        \(capabilities)\(isDefault)}
-        """
-    }
-
     @Test("decodes the documented personal profile verbatim")
     func documentedProfile() throws {
         let registry = try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON()))
@@ -277,6 +279,35 @@ struct ProviderConfigTests {
             guard let configError = error as? ProviderConfigError,
                   case let .malformedConfig(path) = configError else { return false }
             return path.contains("profiles")
+        }
+    }
+}
+
+@Suite("Provider config reasoning effort")
+struct ProviderConfigReasoningEffortTests {
+    @Test("decodes an optional reasoning effort")
+    func decodesReasoningEffort() throws {
+        let registry = try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON(effort: "low")))
+
+        #expect(registry.defaultProfile.reasoningEffort == "low")
+    }
+
+    @Test("defaults a missing reasoning effort to nil")
+    func defaultsMissingReasoningEffort() throws {
+        let registry = try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON()))
+
+        #expect(registry.defaultProfile.reasoningEffort == nil)
+    }
+
+    @Test("rejects an empty reasoning effort")
+    func rejectsEmptyReasoningEffort() throws {
+        #expect {
+            try ProviderConfigDecoder.decode(configJSON(profiles: profileJSON(effort: "   ")))
+        } throws: { error in
+            error as? ProviderConfigError == .emptyField(
+                profileID: "personal-go",
+                field: "reasoningEffort"
+            )
         }
     }
 }

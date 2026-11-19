@@ -19,6 +19,7 @@ public struct LLMRequest: Codable, Sendable, Equatable {
     public let messages: [LLMMessage]
     public let maxTokens: Int?
     public let temperature: Double?
+    public let reasoningEffort: String?
     public let headers: [String: String]
 }
 
@@ -58,6 +59,9 @@ cases; Core never sees JSON envelopes or vendor names. The only transport
 detail Core carries is `LLMError.server(status:)` for an unmapped 5xx.
 `YoChampsProviders` keeps protocol logic pure — an injected `LLMHTTPTransport`
 owns the network boundary — and the retry delay/timeouts are configured data.
+`LLMRequest.reasoningEffort` is an optional free-form string: the
+OpenAI-compatible client sends it verbatim as the top-level `reasoning_effort`
+field, and the key is absent from the body when it is `nil`.
 Descriptions are display-safe: provider payload text is never echoed.
 
 ```swift
@@ -184,6 +188,7 @@ public struct ProviderProfile: Codable, Sendable, Equatable {
     public let headers: [String: String]
     public let secretRef: String
     public let capabilities: Set<Capability>
+    public let reasoningEffort: String?
     public let isDefault: Bool
 }
 
@@ -219,6 +224,13 @@ never the key. The Mac shell implements `SecretStore` with the Keychain service
 `isDefault`, sorts capabilities for stable bytes and writes only references.
 `ProviderRegistry(profiles:defaultProfileID:)` is the public validated
 constructor; the decoder and encoder both use the same invariants.
+
+`reasoningEffort` is optional and additive inside `schemaVersion` 1: a config
+without the key keeps loading, a present-but-blank value is rejected with
+`emptyField(profileID:field:"reasoningEffort")`, and the encoder omits the key
+when it is `nil`. Settings displays the profile model as `model#effort` and
+accepts the same shorthand on save; `#` is input syntax only — the saved model
+is the bare id and the effort travels in its own field.
 
 The shell keeps `config.json` under Application Support via
 `ProviderConfigFileStore`: a missing file is onboarding, an unreadable or

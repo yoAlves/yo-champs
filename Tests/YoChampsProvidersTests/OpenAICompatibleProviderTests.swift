@@ -58,6 +58,43 @@ struct OpenAICompatibleProviderTests {
         #expect((object?["messages"] as? [[String: Any]])?.count == 1)
     }
 
+    @Test("sends reasoning_effort only when configured")
+    func sendsReasoningEffort() async throws {
+        let transport = FakeTransport()
+        await transport.enqueue(status: 200, sse: delta("ok") + done)
+        let effortRequest = LLMRequest(
+            model: "test-model",
+            messages: [LLMMessage(role: .user, content: "hello")],
+            reasoningEffort: "low"
+        )
+
+        try await ProviderContract.streamsAnswer(
+            makeProvider(transport: transport),
+            request: effortRequest,
+            expectedDeltas: ["ok"]
+        )
+
+        let requests = await transport.requests
+        let object = try JSONSerialization.jsonObject(with: requests[0].body) as? [String: Any]
+        #expect(object?["reasoning_effort"] as? String == "low")
+    }
+
+    @Test("omits reasoning_effort when unset")
+    func omitsReasoningEffort() async throws {
+        let transport = FakeTransport()
+        await transport.enqueue(status: 200, sse: delta("ok") + done)
+
+        try await ProviderContract.streamsAnswer(
+            makeProvider(transport: transport),
+            request: request,
+            expectedDeltas: ["ok"]
+        )
+
+        let requests = await transport.requests
+        let object = try JSONSerialization.jsonObject(with: requests[0].body) as? [String: Any]
+        #expect(object?["reasoning_effort"] == nil)
+    }
+
     @Test("maps HTTP status codes to distinct domain errors")
     func statusMapping() async {
         let cases: [(Int, LLMError)] = [

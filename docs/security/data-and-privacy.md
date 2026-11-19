@@ -39,6 +39,7 @@ Only the provider request, sent to the base URL in the selected profile:
 | `stream` | always `true` |
 | `max_tokens` | optional generation limit |
 | `temperature` | optional sampling value |
+| `reasoning_effort` | optional effort variant from the profile; no user content |
 | headers | the profile’s non-secret headers, `Content-Type: application/json`, and `Authorization: Bearer <key>` added from the Keychain at send time |
 
 The body never carries file paths, Keychain references, conversation IDs,

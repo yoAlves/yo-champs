@@ -9,6 +9,7 @@ public struct ProviderProfile: Codable, Sendable, Equatable {
     public let headers: [String: String]
     public let secretRef: String
     public let capabilities: Set<Capability>
+    public let reasoningEffort: String?
     public let isDefault: Bool
 
     public init(
@@ -20,6 +21,7 @@ public struct ProviderProfile: Codable, Sendable, Equatable {
         headers: [String: String],
         secretRef: String,
         capabilities: Set<Capability>,
+        reasoningEffort: String? = nil,
         isDefault: Bool
     ) {
         self.id = id
@@ -30,6 +32,7 @@ public struct ProviderProfile: Codable, Sendable, Equatable {
         self.headers = headers
         self.secretRef = secretRef
         self.capabilities = capabilities
+        self.reasoningEffort = reasoningEffort
         self.isDefault = isDefault
     }
 }

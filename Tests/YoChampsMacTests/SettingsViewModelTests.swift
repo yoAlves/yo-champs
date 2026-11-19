@@ -24,17 +24,70 @@ private struct StubTransport: LLMHTTPTransport {
     }
 }
 
+private actor InMemorySecretStore: SecretStore {
+    private var values: [String: String] = [:]
+    private(set) var setCalls = 0
+
+    func secret(for ref: String) async throws -> String? {
+        values[ref]
+    }
+
+    func setSecret(_ value: String?, for ref: String) async throws {
+        setCalls += 1
+        values[ref] = value
+    }
+}
+
+private actor RecordingTransport: LLMHTTPTransport {
+    private(set) var requests: [LLMHTTPRequest] = []
+
+    func send(_ request: LLMHTTPRequest) async throws -> LLMHTTPResponse {
+        requests.append(request)
+        let sse = "data: {\"choices\":[{\"delta\":{\"content\":\"OK\"}}]}\n\ndata: [DONE]\n\n"
+        let body = AsyncThrowingStream<UInt8, Error> { continuation in
+            for byte in Array(sse.utf8) {
+                continuation.yield(byte)
+            }
+            continuation.finish()
+        }
+        return LLMHTTPResponse(statusCode: 200, body: body)
+    }
+}
+
 @MainActor
 @Suite("SettingsViewModel")
 struct SettingsViewModelTests {
-    private func makeViewModel() -> SettingsViewModel {
-        let directory = FileManager.default.temporaryDirectory
+    private func temporaryDirectory() -> URL {
+        FileManager.default.temporaryDirectory
             .appendingPathComponent("YoChampsSettingsTests-\(UUID().uuidString)")
+    }
+
+    private func makeViewModel(
+        directory: URL? = nil,
+        secrets: any SecretStore = StubSecretStore(),
+        transport: any LLMHTTPTransport = StubTransport()
+    ) -> SettingsViewModel {
+        let directory = directory ?? temporaryDirectory()
         return SettingsViewModel(
             store: ProviderConfigFileStore(directory: directory),
-            secrets: StubSecretStore(),
-            transport: StubTransport(),
+            secrets: secrets,
+            transport: transport,
             packLoader: MascotPackLoader(supportDirectory: directory)
+        )
+    }
+
+    private func profile(model: String = "test-model", effort: String? = nil) -> ProviderProfile {
+        ProviderProfile(
+            id: "personal",
+            label: "Personal",
+            kind: .compatible,
+            baseURL: URL(string: "https://example.test/v1")!,
+            model: model,
+            headers: [:],
+            secretRef: "keychain:provider/personal",
+            capabilities: [.streaming],
+            reasoningEffort: effort,
+            isDefault: true
         )
     }
 
@@ -93,5 +146,79 @@ struct SettingsViewModelTests {
 
         #expect(model.message?.isError == true)
         #expect(model.message?.text.localizedCaseInsensitiveContains("https") == true)
+    }
+
+    @Test("loads a saved effort into the model field")
+    func loadsSavedEffort() async throws {
+        let directory = temporaryDirectory()
+        let store = ProviderConfigFileStore(directory: directory)
+        try await store.save(
+            ProviderRegistry(
+                profiles: [profile(model: "m", effort: "low")],
+                defaultProfileID: "personal"
+            )
+        )
+        let viewModel = makeViewModel(directory: directory)
+
+        await viewModel.load()
+
+        #expect(viewModel.model == "m#low")
+    }
+
+    @Test("saves model and effort separately")
+    func savesModelAndEffort() async throws {
+        let directory = temporaryDirectory()
+        let secrets = InMemorySecretStore()
+        let viewModel = makeViewModel(directory: directory, secrets: secrets)
+        viewModel.baseURL = "https://example.test/v1"
+        viewModel.model = "m#low"
+        viewModel.apiKey = "test-key"
+
+        viewModel.save()
+        try await waitUntil { viewModel.message != nil }
+
+        #expect(viewModel.message?.isError == false)
+        let reloaded = try await ProviderConfigFileStore(directory: directory).load()
+        let registry = try #require(reloaded)
+        #expect(registry.defaultProfile.model == "m")
+        #expect(registry.defaultProfile.reasoningEffort == "low")
+    }
+
+    @Test("rejects an empty effort before saving")
+    func rejectsEmptyEffort() async throws {
+        let directory = temporaryDirectory()
+        let secrets = InMemorySecretStore()
+        let viewModel = makeViewModel(directory: directory, secrets: secrets)
+        viewModel.baseURL = "https://example.test/v1"
+        viewModel.model = "m#"
+
+        viewModel.save()
+        try await waitUntil { viewModel.message != nil }
+
+        #expect(viewModel.message?.isError == true)
+        #expect(viewModel.message?.text.localizedCaseInsensitiveContains("#") == true)
+        let stored = try await ProviderConfigFileStore(directory: directory).load()
+        #expect(stored == nil)
+        let setCalls = await secrets.setCalls
+        #expect(setCalls == 0)
+    }
+
+    @Test("test connection sends the selected effort")
+    func connectionSendsEffort() async throws {
+        let transport = RecordingTransport()
+        let viewModel = makeViewModel(secrets: InMemorySecretStore(), transport: transport)
+        viewModel.baseURL = "https://example.test/v1"
+        viewModel.model = "m#low"
+        viewModel.apiKey = "test-key"
+
+        viewModel.testConnection()
+        try await waitUntil { viewModel.message != nil }
+
+        #expect(viewModel.message?.isError == false)
+        let requests = await transport.requests
+        #expect(requests.count == 1)
+        let object = try JSONSerialization.jsonObject(with: requests[0].body) as? [String: Any]
+        #expect(object?["model"] as? String == "m")
+        #expect(object?["reasoning_effort"] as? String == "low")
     }
 }

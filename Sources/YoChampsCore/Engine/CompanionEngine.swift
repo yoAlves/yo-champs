@@ -80,7 +80,11 @@ public actor CompanionEngine {
                 question: question,
                 budget: budget
             )
-            let request = LLMRequest(model: agent.model, messages: messages)
+            let request = LLMRequest(
+                model: agent.model,
+                messages: messages,
+                reasoningEffort: agent.reasoningEffort
+            )
 
             var answer = ""
             var isStreaming = false

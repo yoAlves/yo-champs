@@ -2,8 +2,8 @@
 
 ## Current state (2026-11-19)
 
-**Version:** 0.1.1 — `release/v0.1.1`, tag `v0.1.1` on the merge commit; the
-previous release is `v0.1.0` on `aec7452`.
+**Version:** 0.1.2 — release cut on `feature/provider-reasoning-effort`; tag
+`v0.1.2` follows the merge. The previous release is `v0.1.1` on `fdbda00`.
 **Milestones:** M0–M3 complete and merged. M4 hardening is an open
 post-release backlog (release ruling in `milestones/M4.md`).
 **App:** functional V0 loop — menu bar, ⌥⌘K, streaming Markdown answers with
@@ -18,6 +18,12 @@ redirect guard landed in PR [#28](https://github.com/yoAlves/yo-champs/pull/28)
 plus O16/O17 are the next refinement round.
 **Open:** evals, injection fixtures, performance report, `make release-dry-run`,
 recorded demo, public checklist. V0.1 features stay out of this release.
+
+## v0.1.2 — provider reasoning effort (2026-11-19)
+
+**State:** release cut on `feature/provider-reasoning-effort`; merge and tag pending.
+**Release notes:** `releases/v0.1.2.md`.
+**Gate:** `make verify` and `make provider-check` green on the branch.
 
 ## v0.1.1 — post-v0.1.0 hardening (2026-11-19)
 

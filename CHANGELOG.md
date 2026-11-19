@@ -11,6 +11,12 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-19
+
+### Added
+
+- Provider profiles accept an optional reasoning effort, set as `model#effort` in Settings and sent as `reasoning_effort` only when configured.
+
 ### Security
 
 - Provider redirects are limited to the configured origin; cross-host, scheme or port changes are rejected before request headers can be forwarded.
@@ -96,7 +102,8 @@ starts in M1.
 - Project `AGENTS.md`, `opencode.jsonc`, `.gitignore`, `.env.example`,
   `.gitleaks.toml`, LICENSE, ASSETS.md, SECURITY.md.
 
-[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.1.1...main
+[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.1.2...main
+[0.1.2]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.2
 [0.1.1]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.1
 [0.1.0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.0
 [0.0.0-m0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.0.0-m0

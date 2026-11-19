@@ -1,7 +1,8 @@
 name: ui
 
-# Non-blocking UI signal, not a required check: `make test-ui` needs full Xcode
-# and a window server, so it runs on demand and nightly instead of on every PR.
+# Non-blocking UI signal, not a required check: the XCUITest suite needs a
+# foreground GUI session and is slower/flakier than the gate set, so it runs on
+# demand and nightly instead of on every PR.
 # Required PR checks stay `core (linux)` and `app + gates (macos)`.
 on:
   workflow_dispatch:

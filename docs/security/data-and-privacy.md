@@ -22,7 +22,8 @@ without a user action.
 
 File permissions: the history directory (the app’s own Application Support
 directory, `~/Library/Application Support/YoChamps/`) is set to mode `0700` and
-`history.json` to `0600` on every history save.
+`history.json` to `0600` on every history save. Before the first history save the
+directory keeps the system default mode; `config.json` holds no secret.
 
 The 2 MB cap is on encoded JSON. Past it, the oldest complete user/assistant
 turns are dropped; the newest turn is kept even when it alone is larger.
@@ -43,6 +44,11 @@ Only the provider request, sent to the base URL in the selected profile:
 The body never carries file paths, Keychain references, conversation IDs,
 telemetry fields or app/user identity. The provider itself adds no
 `Authorization` header: credentials come from the request headers.
+
+On relaunch the visible transcript starts empty, but the stored history is still
+loaded: the next ask sends up to 12 recent complete turns (within the context
+character budget) as `messages`, so the outbound row above covers stored turns
+too. Only rendering the old transcript in the window is future work.
 
 `Tests/YoChampsProvidersTests/PrivacyPayloadTests.swift` pins that boundary by
 capturing the built request.
@@ -69,5 +75,6 @@ the files; the threat model lists this as a non-goal to defend against.
 
 - SQLite/GRDB for history search and RAG (post-V0).
 - Optional app-level encryption with an explicit key-management story.
-- Replaying the stored transcript into the Ask window on launch; history is
-  written today but not rehydrated into a new session.
+- Rendering the stored transcript in the Ask window on launch. The history is
+  already loaded and sent as provider context; only the visible replay is
+  future.

@@ -30,7 +30,9 @@ without anyone noticing.
   when it alone exceeds the cap.
 - The history directory (the app’s own Application Support directory) is set to
   mode `0700` and `history.json` to `0600` on every history save, including when
-  the directory already existed.
+  the directory already existed. Before the first history save the directory
+  keeps the system default mode; `config.json` holds no secret, so nothing
+  sensitive depends on that window.
 - No app-level encryption in V0. At-rest protection is the OS disk encryption
   (FileVault) plus those POSIX modes; the Keychain is encrypted by macOS.
 - No SQLite yet: JSON stays behind the `ConversationStore` protocol.
@@ -39,6 +41,9 @@ without anyone noticing.
 
 - A provider request carries exactly `model`, `messages`, `stream` (always
   `true`), and the optional `max_tokens` and `temperature`.
+- Session start: the visible transcript starts empty on launch, but the stored
+  history is still loaded and its most recent complete turns (up to 12, within
+  the context character budget) are sent as provider context on the next ask.
 - Headers are the profile’s non-secret headers plus `Content-Type` and an
   `Authorization: Bearer` header added from the Keychain at send time. The
   provider itself adds no credential header and stores no key.
@@ -66,8 +71,9 @@ the provider builds and fails if the body key set or headers change.
 
 - SQLite/GRDB for history search and RAG.
 - Optional app-level encryption with an explicit key-management story.
-- Rehydrating the stored transcript into the Ask window on launch; history is
-  currently written but not replayed into a new session.
+- Rendering the stored transcript in the Ask window on launch. The history is
+  already loaded and sent as provider context; only the visible replay is
+  future.
 
 ## Alternatives
 

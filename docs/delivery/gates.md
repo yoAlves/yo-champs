@@ -28,7 +28,8 @@ The single automated gate. It runs, in order:
 5. `make secrets` — gitleaks over the working tree.
 
 `make provider-check` is the M2 integration check: it runs the real streaming
-client against a local SSE stub. `make ci` (macOS) runs `verify` followed by
+client against a local SSE stub and verifies that a cross-host redirect is not
+followed. `make ci` (macOS) runs `verify` followed by
 `provider-check` and `pr-checks-test`; `make verify` alone does not start the
 stub. XCUITest still waits for full Xcode. UI validation never uses MCP.
 

@@ -12,8 +12,9 @@ fresh), embedded Champ with the avatar in the header, Settings/Keychain,
 resizable Ask window.
 **Gate:** `make verify` and `make test-ui` green on `main` (evidence below).
 **Open points:** tracked with severity and size in
-[`open-points.md`](open-points.md); one `Critical` (cross-host redirects) is
-scheduled for the next refinement round.
+[`open-points.md`](open-points.md); no `Critical` points remain — the
+cross-host redirect guard lands with `RedirectPolicyTests` and
+`make provider-check`, and O2–O8 are the next refinement round.
 **Open:** evals, injection fixtures, performance report, `make release-dry-run`,
 recorded demo, public checklist. V0.1 features stay out of this release.
 
@@ -62,7 +63,7 @@ are superseded by #25.
 Tracked with severity, size and evidence in [`open-points.md`](open-points.md).
 Release-specific:
 
-- **O1 (Critical):** cross-host redirects are not rejected yet; the provider key can be forwarded by a redirect.
+- **O1 (Critical):** cross-host redirects are not rejected yet; the provider key can be forwarded by a redirect (closed after v0.1.1; see `open-points.md` and `make provider-check`).
 - History is plaintext for same-user processes (O14); FileVault is the at-rest dependency.
 - The `ui` workflow is a signal; XCUITest needs full Xcode and `make stop` first.
 

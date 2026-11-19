@@ -52,6 +52,16 @@ var targets: [Target] = [
             ]
         )
     )
+
+    targets.append(
+        .testTarget(
+            name: "YoChampsNetworkTests",
+            dependencies: [
+                "YoChampsNetwork",
+                .product(name: "Testing", package: "swift-testing"),
+            ]
+        )
+    )
 #endif
 
 targets.append(

@@ -10,7 +10,6 @@ final class YoChampsUITests: XCTestCase {
         static let askSend = "askSendButton"
         static let newChat = "newChatButton"
         static let mascotWindow = "mascotPanel"
-        static let disclaimer = "disclaimerText"
         static let suite = "com.yurioliveira.yochamps"
         static let hotkeyKey = "KeyboardShortcuts_ask"
         static let showHide = "Show/Hide Ask"
@@ -199,16 +198,6 @@ final class YoChampsUITests: XCTestCase {
     }
 
     // MARK: - New Ask layout and text behavior
-
-    /// The footer disclaimer is always visible under the input row.
-    func testDisclaimerIsVisible() {
-        launchApp()
-
-        let disclaimer = app.staticTexts[ID.disclaimer]
-        XCTAssertTrue(disclaimer.waitForExistence(timeout: 10), "disclaimer missing")
-        let text = (disclaimer.value as? String) ?? disclaimer.label
-        XCTAssertTrue(text.contains("Champ is an AI"), "unexpected disclaimer: \(text)")
-    }
 
     /// Header order: the animated avatar sits on the left, new chat on the right.
     func testHeaderMascotIsLeftOfNewChat() {

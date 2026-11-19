@@ -15,7 +15,7 @@ until the public contract stabilizes.
 
 - Markdown answers in the Ask transcript: `**bold**`, `~~strikethrough~~` and `_italic_` render styled; unclosed markers stay literal.
 - Copy on select for question and answer text; the input field is unaffected.
-- Ask header with the animated Champ avatar on the left and the `+` new-chat button on the right, plus a centered footer disclaimer.
+- Ask header with the animated Champ avatar on the left and the `+` new-chat button on the right.
 - Non-blocking `ui` workflow (`workflow_dispatch` + nightly) that runs `make test-ui` on `macos-15-intel`.
 - `make pr-checks PR=<number>` and `make pr-checks-test`: a bounded wait for a PR's checks and its deterministic suite.
 

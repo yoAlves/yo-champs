@@ -61,12 +61,11 @@ XCUITest with full Xcode (ADR 0002).
 
 One floating-level `NSPanel` hosts Ask: a header with the animated Champ avatar
 on the left and the `+` new-chat button on the right, a scrollable transcript
-with Markdown answers (selectable, copy on select), the input row, and a
-centered footer disclaimer. Show/Hide toggles that window, Esc hides it, and the
-process keeps running. The window is resizable and its frame is persisted by
-`frameAutosaveName`. There is no separate mascot window, mascot drag or restored
-mascot position; the Ask window itself is movable and frame-autosaved
-(ADR 0012).
+with Markdown answers (selectable, copy on select), and the input row.
+Show/Hide toggles that window, Esc hides it, and the process keeps running. The
+window is resizable and its frame is persisted by `frameAutosaveName`. There is
+no separate mascot window, mascot drag or restored mascot position; the Ask
+window itself is movable and frame-autosaved (ADR 0012).
 
 ## Runtime data
 

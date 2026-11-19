@@ -23,7 +23,7 @@ recorded demo, public checklist. V0.1 features stay out of this release.
 |---|---|---|
 | [#17](https://github.com/yoAlves/yo-champs/pull/17) | 2 MB history cap; `0700`/`0600` modes | `92fa1a5` |
 | [#18](https://github.com/yoAlves/yo-champs/pull/18) | HTTPS outside loopback; Settings "Test connection" key guard; payload boundary test; ADR 0013 + privacy docs | `4671e14` |
-| [#19](https://github.com/yoAlves/yo-champs/pull/19) | Markdown parser, selectable text with copy on select, new Ask header/footer, demo answer, 4 new XCUITest cases | `9b58bba` |
+| [#19](https://github.com/yoAlves/yo-champs/pull/19) | Markdown parser, selectable text with copy on select, new Ask header, demo answer, 4 new XCUITest cases | `9b58bba` |
 | [#20](https://github.com/yoAlves/yo-champs/pull/20) | Non-blocking `ui` workflow and the gate docs that govern it | `b1b87d7` |
 | [#21](https://github.com/yoAlves/yo-champs/pull/21) | Bounded `pr-checks` watcher and its deterministic suite in `make ci` | `e931955` |
 

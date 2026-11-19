@@ -4,15 +4,34 @@ import Testing
 
 @Suite("FileConversationStore")
 struct FileConversationStoreTests {
-    private func makeStore() -> (store: FileConversationStore, directory: URL) {
+    private func makeStore(
+        retention: ConversationRetention = .init()
+    ) -> (store: FileConversationStore, directory: URL) {
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("yochamps-test-\(UUID().uuidString)", isDirectory: true)
-        return (FileConversationStore(directory: directory), directory)
+        return (
+            FileConversationStore(directory: directory, retention: retention),
+            directory
+        )
     }
 
     private func write(_ json: String, to directory: URL) throws {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try Data(json.utf8).write(to: directory.appendingPathComponent("history.json"))
+    }
+
+    private func makeConversation(_ turns: [(user: String, assistant: String)]) -> Conversation {
+        Conversation(messages: turns.flatMap { turn in
+            [
+                LLMMessage(role: .user, content: turn.user),
+                LLMMessage(role: .assistant, content: turn.assistant),
+            ]
+        })
+    }
+
+    private func permissions(of url: URL) throws -> Int? {
+        let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+        return (attributes[.posixPermissions] as? NSNumber)?.intValue
     }
 
     @Test("starts with an empty conversation when no file exists")
@@ -121,5 +140,59 @@ struct FileConversationStoreTests {
 
         let conversation = try await store.load()
         #expect(conversation.messages == [.init(role: .user, content: "hi")])
+    }
+
+    @Test("caps the stored history and drops the oldest turns")
+    func capsHistory() async throws {
+        let (store, directory) = makeStore(retention: ConversationRetention(maxBytes: 512))
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let filler = String(repeating: "a", count: 200)
+        let conversation = makeConversation([
+            (filler, filler),
+            (filler, filler),
+            (filler, filler),
+            ("newest question", "newest answer"),
+        ])
+
+        try await store.save(conversation)
+
+        let loaded = try await store.load()
+        let file = directory.appendingPathComponent("history.json")
+        #expect(loaded.messages == [
+            LLMMessage(role: .user, content: "newest question"),
+            LLMMessage(role: .assistant, content: "newest answer"),
+        ])
+        #expect(try Data(contentsOf: file).count <= 512)
+    }
+
+    @Test("creates the directory private and the history file owner-only")
+    func privatePermissions() async throws {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try await store.save(makeConversation([("hello", "hi")]))
+
+        let file = directory.appendingPathComponent("history.json")
+        #expect(try permissions(of: directory) == 0o700)
+        #expect(try permissions(of: file) == 0o600)
+    }
+
+    @Test("tightens an existing directory and keeps later writes private")
+    func tightensExistingDirectory() async throws {
+        let (store, directory) = makeStore()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true,
+            attributes: [.posixPermissions: 0o755]
+        )
+        #expect(try permissions(of: directory) == 0o755)
+
+        try await store.save(makeConversation([("hello", "hi")]))
+        #expect(try permissions(of: directory) == 0o700)
+
+        try await store.save(makeConversation([("hello", "hi"), ("again", "sure")]))
+        let file = directory.appendingPathComponent("history.json")
+        #expect(try permissions(of: directory) == 0o700)
+        #expect(try permissions(of: file) == 0o600)
     }
 }

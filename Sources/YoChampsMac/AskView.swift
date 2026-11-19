@@ -24,7 +24,7 @@ struct AskView: View {
                     .textSelection(.enabled)
             }
 
-            VStack(spacing: 2) {
+            VStack(spacing: 4) {
                 inputRow
 
                 Text("Champ is an AI and can make mistakes")
@@ -36,7 +36,7 @@ struct AskView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
-        .padding(.bottom, 2)
+        .padding(.bottom, 4)
         .frame(minWidth: 380, minHeight: 300)
         .onAppear {
             isFocused = true

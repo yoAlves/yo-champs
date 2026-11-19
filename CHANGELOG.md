@@ -11,6 +11,8 @@ until the public contract stabilizes.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-19
+
 ### Added
 
 - Markdown answers in the Ask transcript: `**bold**`, `~~strikethrough~~` and `_italic_` render styled; unclosed markers stay literal.
@@ -90,6 +92,7 @@ starts in M1.
 - Project `AGENTS.md`, `opencode.jsonc`, `.gitignore`, `.env.example`,
   `.gitleaks.toml`, LICENSE, ASSETS.md, SECURITY.md.
 
-[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.1.0...main
+[Unreleased]: https://github.com/yoAlves/yo-champs/compare/v0.1.1...main
+[0.1.1]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.1
 [0.1.0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.1.0
 [0.0.0-m0]: https://github.com/yoAlves/yo-champs/releases/tag/v0.0.0-m0

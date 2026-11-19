@@ -103,6 +103,7 @@ struct AskView: View {
                                         .font(.callout)
                                     SelectableMarkdownText(
                                         text: MarkdownParser.parse(turn.answer),
+                                        fontSize: 12,
                                         accessibilityIdentifier: "answerText"
                                     )
                                 }

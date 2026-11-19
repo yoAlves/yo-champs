@@ -29,14 +29,25 @@ suite, a day), **L** (design work or a cross-module change).
 | O13 | LAN models over plain `http` are rejected by design; an explicit per-profile override is not implemented | Backlog | M | `docs/security/data-and-privacy.md`; ADR 0013 alternatives |
 | O14 | History stays plaintext JSON for same-user processes; app-level encryption and transcript replay are future work | Backlog | L | ADR 0013; `docs/product/roadmap.md` |
 | O15 | Watcher: the SIGALRM-to-142 path is not exercised by the fake `gh` (it is exercised by real PRs); remaining review suggestions are cosmetic | Backlog | S | `scripts/pr-checks.sh`, `scripts/pr-checks-test.sh` |
+| O16 | Config tests exercise only the decoder path; the encoder/registry rejection is not asserted directly, and the error-description test does not check the profile id and host in the message | Should | S | `Tests/YoChampsProvidersTests/ProviderConfigTests.swift` |
+| O17 | No `performSave` regression test proving Settings Save rejects a remote `http` base URL before the Keychain write | Should | S | `Sources/YoChampsMac/SettingsViewModel.swift`, `Tests/YoChampsMacTests/SettingsViewModelTests.swift` |
+| O18 | `ConversationRetention`'s doc comment promises no assistant answer without its question, which an odd legacy array can violate | Backlog | S | `Sources/YoChampsCore/Conversation/ConversationRetention.swift` |
+
+## Status
+
+- **O1 is in progress in a separate session** (cross-host redirect rejection). When that
+  PR merges, update the O1 row (mark it closed and point at the merge commit) and
+  re-triage the rest.
 
 ## Next refinement round (proposed)
 
-1. **O2 + O3** — private write path end to end: apply modes on the temp file,
+1. **O1** — reject cross-host redirects in the transport (security; in progress
+   in a separate session).
+2. **O2 + O3** — private write path end to end: apply modes on the temp file,
    keep `clear()`/`save()` semantics, and cover the chmod failure path.
-2. **O4 + O5** — fail-safe retention fallback and a documented transport
+3. **O4 + O5** — fail-safe retention fallback and a documented transport
    contract.
-3. **O6 + O7 + O8** — warning-free Release build and the two test gaps that
-   protect documented behavior.
+4. **O6 + O7 + O8 + O16 + O17** — warning-free Release build and the test gaps
+   that protect documented behavior.
 
 Everything else stays in the backlog until a feature pulls it in.

@@ -49,6 +49,39 @@ do {
     fail("provider request failed: \(String(describing: error))")
 }
 
+/// The stub records the last streaming payload; an effort must be sent only
+/// when the request configures one.
+func lastEffort(at baseURL: URL) async -> String? {
+    let url = URL(string: "/last-effort", relativeTo: baseURL)!.absoluteURL
+    guard let (data, _) = try? await URLSession.shared.data(from: url) else {
+        return nil
+    }
+    return String(data: data, encoding: .utf8)?
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+guard await lastEffort(at: baseURL) == "" else {
+    fail("a request without an effort still sent reasoning_effort")
+}
+
+let effortRequest = LLMRequest(
+    model: "stub-model",
+    messages: [LLMMessage(role: .user, content: "hello")],
+    reasoningEffort: "low"
+)
+
+do {
+    for try await _ in provider.stream(effortRequest) {}
+} catch {
+    fail("effort request failed: \(String(describing: error))")
+}
+
+guard await lastEffort(at: baseURL) == "low" else {
+    fail("the request did not send reasoning_effort=low")
+}
+
+print("provider-check: reasoning effort")
+
 /// A redirect that leaves the provider origin must not be followed: request
 /// headers carry the Keychain-backed key. The stub redirects to `localhost`
 /// and records any hit on the target.

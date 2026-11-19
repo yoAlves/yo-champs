@@ -80,6 +80,9 @@ private enum ProviderProfileValidation {
         ] where value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw ProviderConfigError.emptyField(profileID: profile.id, field: field)
         }
+        if profile.reasoningEffort?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true {
+            throw ProviderConfigError.emptyField(profileID: profile.id, field: "reasoningEffort")
+        }
         guard let scheme = profile.baseURL.scheme?.lowercased(),
               scheme == "http" || scheme == "https",
               profile.baseURL.host?.isEmpty == false
@@ -135,6 +138,7 @@ private struct ProviderProfileWire: Decodable {
     let headers: [String: String]?
     let secretRef: String
     let capabilities: [Capability]?
+    let reasoningEffort: String?
     let isDefault: Bool?
 }
 
@@ -153,6 +157,7 @@ private struct ProviderProfileOutput: Encodable {
     let headers: [String: String]
     let secretRef: String
     let capabilities: [Capability]
+    let reasoningEffort: String?
     let isDefault: Bool
 
     init(profile: ProviderProfile, defaultID: String) {
@@ -164,6 +169,7 @@ private struct ProviderProfileOutput: Encodable {
         headers = profile.headers
         secretRef = profile.secretRef
         capabilities = profile.capabilities.sorted { $0.rawValue < $1.rawValue }
+        reasoningEffort = profile.reasoningEffort
         isDefault = profile.id == defaultID
     }
 }
@@ -202,6 +208,7 @@ public struct ProviderRegistry: Sendable, Equatable {
                 headers: profile.headers,
                 secretRef: profile.secretRef,
                 capabilities: profile.capabilities,
+                reasoningEffort: profile.reasoningEffort,
                 isDefault: profile.id == defaultProfileID
             )
         }
@@ -277,6 +284,7 @@ public enum ProviderConfigDecoder {
                 headers: profile.headers,
                 secretRef: profile.secretRef,
                 capabilities: profile.capabilities,
+                reasoningEffort: profile.reasoningEffort,
                 isDefault: profile.id == defaultID
             )
         }
@@ -299,6 +307,7 @@ public enum ProviderConfigDecoder {
             headers: wire.headers ?? [:],
             secretRef: wire.secretRef,
             capabilities: Set(wire.capabilities ?? []),
+            reasoningEffort: wire.reasoningEffort,
             isDefault: wire.isDefault ?? false
         )
         try ProviderProfileValidation.validate(profile)

@@ -223,12 +223,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             base: URLSessionLLMTransport()
         )
         let provider = OpenAICompatibleProvider(configuration: configuration, transport: transport)
-        let agent = AgentDefinition(
-            id: profile.id,
-            name: profile.label,
-            systemPrompt: systemPrompt,
-            model: profile.model
-        )
+        let agent = CompanionAgentFactory.make(profile: profile, systemPrompt: systemPrompt)
         return CompanionEngine(
             provider: provider,
             agent: agent,

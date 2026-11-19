@@ -8,6 +8,7 @@ import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 leak_hits = []
+last_effort = ""
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -16,6 +17,13 @@ class Handler(BaseHTTPRequestHandler):
             leak_hits.append(self.headers.get("Host", ""))
             self.send_response(204)
             self.end_headers()
+            return
+        if self.path == "/last-effort":
+            body = last_effort.encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
             return
         if self.path == "/leak-count":
             body = str(len(leak_hits)).encode()
@@ -45,6 +53,10 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(400)
             self.end_headers()
             return
+
+        # Readiness probes use "stream": false and must not overwrite this.
+        global last_effort
+        last_effort = payload.get("reasoning_effort") or ""
 
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")

@@ -46,11 +46,13 @@ private struct ChatRequest: Encodable {
     let stream: Bool
     let maxTokens: Int?
     let temperature: Double?
+    let reasoningEffort: String?
 
     enum CodingKeys: String, CodingKey {
         case model, messages, stream
         case maxTokens = "max_tokens"
         case temperature
+        case reasoningEffort = "reasoning_effort"
     }
 }
 
@@ -190,7 +192,8 @@ public struct OpenAICompatibleProvider: LLMProvider {
             messages: request.messages,
             stream: true,
             maxTokens: request.maxTokens,
-            temperature: request.temperature
+            temperature: request.temperature,
+            reasoningEffort: request.reasoningEffort
         )
         let data = try JSONEncoder().encode(body)
         var headers = ["Content-Type": "application/json"]

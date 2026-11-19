@@ -8,6 +8,7 @@ public enum SettingsError: Error, Sendable, Equatable, CustomStringConvertible {
     case missingModel
     case missingKey
     case invalidHeader(Int)
+    case invalidModelSelection(ModelSelectionError)
 
     public var description: String {
         switch self {
@@ -19,6 +20,8 @@ public enum SettingsError: Error, Sendable, Equatable, CustomStringConvertible {
             "Add an API key — it is stored in the Keychain, not in config.json"
         case let .invalidHeader(line):
             "Header on line \(line) must use Name: value format"
+        case let .invalidModelSelection(error):
+            error.description
         }
     }
 }
@@ -91,7 +94,7 @@ final class SettingsViewModel: ObservableObject {
             let profile = registry.defaultProfile
             profileID = profile.id
             baseURL = profile.baseURL.absoluteString
-            model = profile.model
+            model = ModelSelection(model: profile.model, effort: profile.reasoningEffort).displayString
             secretRef = profile.secretRef
             headers = profile.headers.map { "\($0.key): \($0.value)" }.joined(separator: "\n")
             hasStoredKey = await ((try? secrets.secret(for: profile.secretRef))?.isEmpty == false)
@@ -136,20 +139,18 @@ final class SettingsViewModel: ObservableObject {
 
             // Validate everything before any side effect (especially Keychain).
             let base = existing?.profile(id: id)
-            let capabilities: Set<Capability> = if let base, !base.capabilities.isEmpty {
-                base.capabilities
-            } else {
-                [.streaming]
-            }
+            let capabilities = resolvedCapabilities(base: base)
+            let selection = try validatedSelection()
             let profile = try ProviderProfile(
                 id: id,
                 label: base?.label ?? "Personal",
                 kind: .compatible,
                 baseURL: validatedURL(),
-                model: validatedModel(),
+                model: selection.model,
                 headers: parsedHeaders(),
                 secretRef: reference,
                 capabilities: capabilities,
+                reasoningEffort: selection.effort,
                 isDefault: true
             )
             var profiles = existing?.profiles ?? []
@@ -180,6 +181,15 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    /// A new profile starts with streaming only; an existing profile keeps its
+    /// declared capabilities.
+    private func resolvedCapabilities(base: ProviderProfile?) -> Set<Capability> {
+        guard let base, !base.capabilities.isEmpty else {
+            return [.streaming]
+        }
+        return base.capabilities
+    }
+
     func testConnection() {
         work?.cancel()
         work = Task { [weak self] in
@@ -195,6 +205,7 @@ final class SettingsViewModel: ObservableObject {
             // Validate the transport before touching the Keychain or any
             // header: a remote http URL must never carry a bearer token.
             let baseURL = try validatedURL()
+            let selection = try validatedSelection()
             let reference = secretRef.isEmpty ? "keychain:provider/\(profileID ?? "personal")" : secretRef
             let typedKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
             let key = try await typedKey.isEmpty ? storedKeyOrThrow(for: reference) : typedKey
@@ -211,9 +222,10 @@ final class SettingsViewModel: ObservableObject {
                 transport: transport
             )
             let request = try LLMRequest(
-                model: validatedModel(),
+                model: selection.model,
                 messages: [.init(role: .user, content: "Reply with OK")],
                 maxTokens: 256,
+                reasoningEffort: selection.effort,
                 headers: requestHeaders
             )
             var answer = ""
@@ -268,10 +280,12 @@ final class SettingsViewModel: ObservableObject {
         return url
     }
 
-    private func validatedModel() throws -> String {
-        let trimmed = model.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw SettingsError.missingModel }
-        return trimmed
+    func validatedSelection() throws -> ModelSelection {
+        do {
+            return try ModelSelection(parsing: model)
+        } catch let error as ModelSelectionError {
+            throw SettingsError.invalidModelSelection(error)
+        }
     }
 
     private func parsedHeaders() throws -> [String: String] {

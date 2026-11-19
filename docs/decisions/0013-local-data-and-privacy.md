@@ -40,7 +40,7 @@ without anyone noticing.
 **Outbound boundary**
 
 - A provider request carries exactly `model`, `messages`, `stream` (always
-  `true`), and the optional `max_tokens` and `temperature`.
+  `true`), and the optional `max_tokens`, `temperature` and `reasoning_effort`.
 - Session start: the visible transcript starts empty on launch, but the stored
   history is still loaded and its most recent complete turns (up to 12, within
   the context character budget) are sent as provider context on the next ask.

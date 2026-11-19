@@ -5,7 +5,10 @@ import YoChampsCore
 
 @Suite("Provider config encoder")
 struct ProviderConfigEncoderTests {
-    private func profile(id: String = "personal-go") -> ProviderProfile {
+    private func profile(
+        id: String = "personal-go",
+        reasoningEffort: String? = nil
+    ) -> ProviderProfile {
         ProviderProfile(
             id: id,
             label: "Personal Go",
@@ -15,6 +18,7 @@ struct ProviderConfigEncoderTests {
             headers: ["x-opencode-session": "{{conversationId}}"],
             secretRef: "keychain:provider/personal-go",
             capabilities: [.streaming, .maxContext],
+            reasoningEffort: reasoningEffort,
             isDefault: id == "personal-go"
         )
     }
@@ -29,6 +33,29 @@ struct ProviderConfigEncoderTests {
         #expect(registry.defaultProfile.id == "personal-go")
         let secondary = try #require(registry.profile(id: "secondary"))
         #expect(secondary.capabilities == [.streaming, .maxContext])
+    }
+
+    @Test("round-trips the reasoning effort")
+    func roundTripsReasoningEffort() throws {
+        let data = try ProviderConfigEncoder.encode(
+            profiles: [profile(reasoningEffort: "low")],
+            defaultProfileID: "personal-go"
+        )
+
+        let registry = try ProviderConfigDecoder.decode(data)
+        #expect(registry.defaultProfile.reasoningEffort == "low")
+    }
+
+    @Test("omits a nil reasoning effort from the bytes")
+    func omitsNilReasoningEffort() throws {
+        let data = try ProviderConfigEncoder.encode(
+            profiles: [profile()],
+            defaultProfileID: "personal-go"
+        )
+        let object = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let profiles = try #require(object?["profiles"] as? [[String: Any]])
+
+        #expect(profiles[0]["reasoningEffort"] == nil)
     }
 
     @Test("writes the documented wire kind and schema version")

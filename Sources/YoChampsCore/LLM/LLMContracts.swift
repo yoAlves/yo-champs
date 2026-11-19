@@ -22,6 +22,7 @@ public struct LLMRequest: Codable, Sendable, Equatable {
     public let messages: [LLMMessage]
     public let maxTokens: Int?
     public let temperature: Double?
+    public let reasoningEffort: String?
     public let headers: [String: String]
 
     public init(
@@ -29,12 +30,14 @@ public struct LLMRequest: Codable, Sendable, Equatable {
         messages: [LLMMessage],
         maxTokens: Int? = nil,
         temperature: Double? = nil,
+        reasoningEffort: String? = nil,
         headers: [String: String] = [:]
     ) {
         self.model = model
         self.messages = messages
         self.maxTokens = maxTokens
         self.temperature = temperature
+        self.reasoningEffort = reasoningEffort
         self.headers = headers
     }
 }

@@ -33,21 +33,20 @@ suite, a day), **L** (design work or a cross-module change).
 | O17 | No `performSave` regression test proving Settings Save rejects a remote `http` base URL before the Keychain write | Should | S | `Sources/YoChampsMac/SettingsViewModel.swift`, `Tests/YoChampsMacTests/SettingsViewModelTests.swift` |
 | O18 | `ConversationRetention`'s doc comment promises no assistant answer without its question, which an odd legacy array can violate | Backlog | S | `Sources/YoChampsCore/Conversation/ConversationRetention.swift` |
 
-## Status
+## Closed
 
-- **O1 is in progress in a separate session** (cross-host redirect rejection). When that
-  PR merges, update the O1 row (mark it closed and point at the merge commit) and
-  re-triage the rest.
+- **O1 — cross-host redirects** closed by PR [#28](https://github.com/yoAlves/yo-champs/pull/28)
+  (`71442d7`): `RedirectGuard` rejects redirects outside the provider origin
+  (host, scheme, port, missing host); `Tests/YoChampsNetworkTests/RedirectPolicyTests.swift`
+  covers the matrix and `make provider-check` exercises it end to end.
 
 ## Next refinement round (proposed)
 
-1. **O1** — reject cross-host redirects in the transport (security; in progress
-   in a separate session).
-2. **O2 + O3** — private write path end to end: apply modes on the temp file,
+1. **O2 + O3** — private write path end to end: apply modes on the temp file,
    keep `clear()`/`save()` semantics, and cover the chmod failure path.
-3. **O4 + O5** — fail-safe retention fallback and a documented transport
+2. **O4 + O5** — fail-safe retention fallback and a documented transport
    contract.
-4. **O6 + O7 + O8 + O16 + O17** — warning-free Release build and the test gaps
+3. **O6 + O7 + O8 + O16 + O17** — warning-free Release build and the test gaps
    that protect documented behavior.
 
 Everything else stays in the backlog until a feature pulls it in.

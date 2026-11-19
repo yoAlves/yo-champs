@@ -12,6 +12,7 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
     case credentialHeader(String)
     case emptyField(profileID: String, field: String)
     case invalidBaseURL(profileID: String)
+    case insecureBaseURL(profileID: String, host: String)
     case malformedConfig(String)
 
     public var description: String {
@@ -36,6 +37,8 @@ public enum ProviderConfigError: Error, Sendable, Equatable, CustomStringConvert
             "profile '\(profileID)' has an empty \(field)"
         case let .invalidBaseURL(profileID):
             "profile '\(profileID)' needs an absolute http(s) baseURL"
+        case let .insecureBaseURL(profileID, host):
+            "profile '\(profileID)' needs https for '\(host)'; http is limited to loopback hosts"
         case let .malformedConfig(path):
             "config.json is malformed at \(path)"
         }
@@ -61,6 +64,9 @@ private enum ProviderProfileValidation {
         else {
             throw ProviderConfigError.invalidBaseURL(profileID: profile.id)
         }
+        if scheme == "http", !isLoopbackHost(host) {
+            throw ProviderConfigError.insecureBaseURL(profileID: profile.id, host: host)
+        }
         try validateSecretRef(profile.secretRef, profileID: profile.id)
         for (name, value) in profile.headers {
             let normalizedValue = value.trimmingCharacters(in: .whitespaces).lowercased()
@@ -72,6 +78,14 @@ private enum ProviderProfileValidation {
                 throw ProviderConfigError.credentialHeader(name)
             }
         }
+    }
+
+    private static func isLoopbackHost(_ host: String) -> Bool {
+        var normalized = host.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if normalized.hasPrefix("["), normalized.hasSuffix("]") {
+            normalized = String(normalized.dropFirst().dropLast())
+        }
+        return normalized == "localhost" || normalized == "127.0.0.1" || normalized == "::1"
     }
 
     private static func validateSecretRef(_ ref: String, profileID: String) throws {

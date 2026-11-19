@@ -1,4 +1,5 @@
 import SwiftUI
+import YoChampsCore
 
 struct AskView: View {
     @ObservedObject var model: CompanionViewModel
@@ -24,6 +25,12 @@ struct AskView: View {
             }
 
             inputRow
+
+            Text("Champ is an AI and can make mistakes.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary.opacity(0.6))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .accessibilityIdentifier("disclaimerText")
         }
         .padding(16)
         .frame(minWidth: 380, minHeight: 300)
@@ -38,32 +45,6 @@ struct AskView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            Text("CHAMP")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .kerning(1.2)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(.quaternary, in: Capsule())
-
-            Spacer()
-
-            HStack(spacing: 6) {
-                Button {
-                    model.newChat()
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.caption.weight(.semibold))
-                }
-                .buttonStyle(.borderless)
-                .frame(width: 24, height: 24)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
-                .help("New Chat")
-                .keyboardShortcut("n", modifiers: .command)
-                .disabled(model.isBusy)
-                .accessibilityIdentifier("newChatButton")
-            }
-
             if let image = renderer.currentImage {
                 Image(nsImage: image)
                     .resizable()
@@ -71,8 +52,23 @@ struct AskView: View {
                     .frame(width: 56, height: 56)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
                     .accessibilityIdentifier("mascotPanel")
-                    .padding(.trailing, 4)
             }
+
+            Spacer()
+
+            Button {
+                model.newChat()
+            } label: {
+                Image(systemName: "plus")
+                    .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.borderless)
+            .frame(width: 24, height: 24)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 6))
+            .help("New Chat")
+            .keyboardShortcut("n", modifiers: .command)
+            .disabled(model.isBusy)
+            .accessibilityIdentifier("newChatButton")
         }
     }
 
@@ -91,21 +87,27 @@ struct AskView: View {
                         // belong to the whole block, or long answers stream
                         // below the fold while the question line is pinned.
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(turn.question)
-                                .font(.callout)
-                                .fontWeight(.semibold)
-                                .textSelection(.enabled)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                            SelectableMarkdownText(
+                                text: MarkdownParser.parse(turn.question),
+                                fontSize: 12,
+                                weight: .semibold,
+                                accessibilityIdentifier: "questionText"
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                             if isWaitingForFirstToken(turn) {
                                 ThinkingIndicator()
                             } else {
-                                Text("• \(turn.answer)")
-                                    .font(.callout)
-                                    .textSelection(.enabled)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                HStack(alignment: .top, spacing: 4) {
+                                    Text("•")
+                                        .font(.callout)
+                                    SelectableMarkdownText(
+                                        text: MarkdownParser.parse(turn.answer),
+                                        fontSize: 12,
+                                        accessibilityIdentifier: "answerText"
+                                    )
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                     }

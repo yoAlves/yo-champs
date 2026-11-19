@@ -11,7 +11,7 @@ public struct MockProvider: LLMProvider {
         case failure(LLMError)
     }
 
-    public static let defaultAnswer = "Champ here. This is a mock reply, streamed one word at a time."
+    public static let defaultAnswer = "Champ here. This is a **mock** reply, ~~fake~~ but streamed one word at a time."
 
     private let behavior: Behavior
     private let chunkDelay: Duration
